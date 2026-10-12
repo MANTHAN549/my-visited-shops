@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="My Visited Shops">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#14b8a6" />
+      <stop offset="1" stop-color="#0f766e" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#g)" />
+  <path
+    d="M32 13c-7.18 0-13 5.82-13 13 0 9.1 11.4 22.3 12.36 23.4a.86.86 0 0 0 1.28 0C33.6 48.3 45 35.1 45 26c0-7.18-5.82-13-13-13Z"
+    fill="#ffffff"
+  />
+  <circle cx="32" cy="26" r="5.2" fill="#0f766e" />
+</svg>
