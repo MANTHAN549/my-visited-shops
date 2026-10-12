@@ -21,6 +21,7 @@ const VisitHistoryPage = lazy(() => import('@/pages/VisitHistoryPage'))
 const VisitDetailsPage = lazy(() => import('@/pages/VisitDetailsPage'))
 const BackupRestorePage = lazy(() => import('@/pages/BackupRestorePage'))
 const SettingsPage = lazy(() => import('@/pages/SettingsPage'))
+const MigrationPage = lazy(() => import('@/migration/MigrationPage'))
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'))
 
 function RouteFallback() {
@@ -56,6 +57,7 @@ export function AppRoutes() {
                 <Route path="/visits/:id" element={<VisitDetailsPage />} />
                 <Route path="/backup" element={<BackupRestorePage />} />
                 <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/migrate" element={<MigrationPage />} />
                 <Route path="/dashboard" element={<Navigate to="/" replace />} />
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>

@@ -179,6 +179,15 @@ export async function refreshGithubData(): Promise<GithubPayload> {
     throw error
   }
 }
+export async function mergeAndUploadGithubData(incoming: GithubPayload): Promise<GithubPayload> {
+  return enqueue(() => updateFile((current, isNew) => {
+    const combined = mergeGithubPayload(current, incoming)
+    return {
+      ...combined,
+      settings: isNew ? incoming.settings : current.settings,
+    }
+  }))
+}
 export async function testGithubConnection(): Promise<number> {
   const fresh = await fetchFresh()
   return new Blob([JSON.stringify(fresh.payload)]).size
@@ -190,12 +199,12 @@ export async function initializeGithubStore(secret: string): Promise<void> {
   if (fresh.sha) return
   await enqueue(() => updateFile((current) => current))
 }
-async function updateFile(change: (current: GithubPayload) => GithubPayload): Promise<GithubPayload> {
+async function updateFile(change: (current: GithubPayload, isNew: boolean) => GithubPayload): Promise<GithubPayload> {
   const config = requiredConfig()
   let lastError: Error | null = null
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const fresh = await fetchFresh()
-    const payload = githubPayloadSchema.parse(change(fresh.payload))
+    const payload = githubPayloadSchema.parse(change(fresh.payload, fresh.sha === null))
     const wire = await encryptPayload(payload, fresh.salt)
     const body = { message: 'Update My Visited Shops data', content: encodeBase64(JSON.stringify(wire)), branch: config.branch, ...(fresh.sha ? { sha: fresh.sha } : {}) }
     const response = await request(fileUrl({ ...config, branch: config.branch }), {
