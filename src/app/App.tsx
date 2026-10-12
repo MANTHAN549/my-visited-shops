@@ -8,6 +8,7 @@ import { db } from '@/database/db'
 import { getEncryptionMeta } from '@/services/settingsService'
 import { requestPersistentStorage } from '@/database/db'
 import { setSessionKey } from '@/services/encryptionService'
+import { GithubDataProvider } from '@/services/githubDataContext'
 
 /**
  * Startup gate.
@@ -93,7 +94,9 @@ function AppShell() {
 export default function App() {
   return (
     <AppProviders>
-      <AppShell />
+      <GithubDataProvider>
+        <AppShell />
+      </GithubDataProvider>
     </AppProviders>
   )
 }

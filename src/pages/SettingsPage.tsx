@@ -19,6 +19,8 @@ import {
   Unlock,
 } from 'lucide-react'
 import { DataState, PageHeader, Spinner } from '@/components/common'
+import { CloudSyncPanel } from '@/components/layout/CloudSyncPanel'
+import { GithubSettingsPanel } from '@/components/layout/GithubSettingsPanel'
 import { useConfirm, useSession, useToast } from '@/app/providers'
 import { useEncryptionMeta, useSettings, useShops, useVisits } from '@/hooks'
 import { bumpRevision } from '@/hooks'
@@ -34,7 +36,7 @@ import { formatBytes } from '@/utils/image'
 import { pluralize } from '@/utils/format'
 import { resetAllCaches } from '@/utils/maintenance'
 
-/** Settings & Security: encryption, locking, storage, map/routing providers. */
+/** Settings & Security: encryption, cloud sync, locking, storage, and map/routing providers. */
 export default function SettingsPage() {
   const { success, error: toastError, warning, info } = useToast()
   const confirm = useConfirm()
@@ -248,7 +250,7 @@ export default function SettingsPage() {
     <>
       <PageHeader
         title="Settings &amp; Security"
-        description="Encryption, locking, map and routing providers, and local storage."
+        description="Account sync, encryption, locking, map and routing providers, and local storage."
         icon={<ShieldCheck className="h-5 w-5 text-brand-700" />}
         actions={
           <Link to="/backup" className="btn-secondary">
@@ -259,6 +261,8 @@ export default function SettingsPage() {
       />
 
       <div className="grid gap-4 lg:grid-cols-2">
+        <GithubSettingsPanel />
+        <CloudSyncPanel />
         {/* ------------------------------ Encryption ------------------------------ */}
         <section className="card p-4 lg:col-span-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -672,11 +676,11 @@ export default function SettingsPage() {
             </div>
 
             <div className="rounded-lg border border-ink-200 p-3">
-              <h3 className="text-sm font-semibold text-ink-800">Two devices, two databases</h3>
+              <h3 className="text-sm font-semibold text-ink-800">Use your account on each device</h3>
               <p className="mt-1 text-xs text-ink-500">
-                Installing the app on a second phone creates a separate, empty database. Records are
-                not synchronised — transfer them with an encrypted backup file (Backup &amp; Restore
-                page).
+                Each device keeps its own local database. Sign in to the same account, unlock cloud
+                encryption with the same passphrase, then sync to transfer your encrypted records.
+                Keep using backups as an additional safety copy.
               </p>
               <Link to="/backup" className="btn-secondary btn-sm mt-2">
                 <Download className="h-3.5 w-3.5" />
@@ -691,8 +695,8 @@ export default function SettingsPage() {
               Privacy summary
             </p>
             <ul className="mt-1.5 list-disc space-y-1 pl-4">
-              <li>Your shops, contacts, coordinates and visit notes stay in this browser.</li>
-              <li>No analytics, no advertising scripts, no accounts, no server of our own.</li>
+              <li>Records stay in this browser unless you sign in and enable encrypted cloud sync.</li>
+              <li>No analytics or advertising scripts. Cloud records are encrypted before upload.</li>
               <li>
                 Network requests are limited to: map tiles (OpenStreetMap/OpenTopoMap), the routing
                 service when you open directions, and address lookup if you enable it.
