@@ -1,7 +1,7 @@
 {
   "name": "My Visited Shops",
   "short_name": "Visited Shops",
-  "description": "Save the shops you visit with their GPS coordinates and contacts, and navigate back to them any time. Local-first and offline capable.",
+  "description": "Track shops and visits across devices with encrypted data stored in your private GitHub repository.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

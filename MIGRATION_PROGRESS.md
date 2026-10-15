@@ -17,18 +17,17 @@ Branch: `github-storage`
 
 ## Phase 3: Switch the app and remove old storage
 
-- Status: implementation complete; commit pending.
+- Status: committed as `c076222`.
 - Switched shop, visit, settings, backup, and restore access to GitHub storage and context hooks. The app asks for the GitHub data passphrase at startup when a repository is configured.
-- Replaced local encryption and cloud-account settings UI with GitHub settings; removed CloudSyncPanel, sync queue, local encryption, and the old app database services from the main source tree.
-- Moved the remaining Dexie/Supabase migration readers and decrypt/auth support into `src/migration/legacy/`. Kept `dexie` and `@supabase/supabase-js`; removed `dexie-react-hooks` and `fake-indexeddb` from the app dependencies/tests.
-- Reworked erase to tombstone and clear the shared GitHub records. Backups now read and restore the GitHub document.
-- Next: commit Phase 3, finish Phase 4 deployment/PWA config and Phase 5 docs/tests, then run the full verification suite.
+- Replaced local encryption and cloud-account settings UI with GitHub settings; removed CloudSyncPanel, sync queue, local encryption, and old app database services from the main source tree.
+- Moved the remaining Dexie/Supabase migration readers and decrypt/auth support into `src/migration/legacy/`. Kept `dexie` and `@supabase/supabase-js`; removed `dexie-react-hooks` and `fake-indexeddb` from app dependencies/tests.
+- Reworked erase to tombstone and clear shared GitHub records. Backups now read and restore the GitHub document.
 
 ## Phase 4: PWA, build, deploy
 
-- Status: implementation in progress.
-- Added an explicit NetworkOnly service-worker rule for `api.github.com`, retained map tile caching and GitHub Pages base-path behavior, and updated the app/manifest descriptions and deployment workflow.
-- Next: verify generated output and commit Phase 4.
+- Status: implementation complete; commit pending.
+- Added an explicit NetworkOnly service-worker rule for `api.github.com`, retained map tile caching and GitHub Pages base-path behavior, and updated app/manifest descriptions, `.env.example`, and deployment workflow.
+- Next: commit Phase 4, finish Phase 5 review, and rerun full verification.
 
 ## Phase 5: Docs and tests
 

@@ -22,6 +22,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const base = env.VITE_BASE_PATH || '/'
 
+
   return {
     base,
     resolve: {
@@ -40,7 +41,7 @@ export default defineConfig(({ mode }) => {
           name: 'My Visited Shops',
           short_name: 'Visited Shops',
           description:
-            'Save the shops you visit, keep their GPS coordinates and contacts, and navigate back to them any time. Works offline and stores everything on your device.',
+            "Track shops and visits across devices. Encrypted data is stored in your private GitHub repository.",
           theme_color: '#0f766e',
           background_color: '#f8fafc',
           display: 'standalone',
@@ -67,6 +68,11 @@ export default defineConfig(({ mode }) => {
           clientsClaim: false,
           skipWaiting: false,
           runtimeCaching: [
+            {
+              // GitHub Contents API responses include private user data and must never enter Cache Storage.
+              urlPattern: /^https:\/\/api\.github\.com\/.*$/i,
+              handler: 'NetworkOnly',
+            },
             {
               // OpenStreetMap raster tiles. Previously visited areas stay visible
               // offline; anything never loaded before still needs a connection.
@@ -118,3 +124,4 @@ export default defineConfig(({ mode }) => {
     },
   }
 })
+
