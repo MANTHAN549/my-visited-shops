@@ -44,11 +44,8 @@ public/sw.js
 public/workbox-*.js
 public/registerSW.js
 
-# ---------------------------------------------------------------------------
-# NEVER COMMIT PERSONAL DATA
-# Encrypted or plain-text backups contain your shops, phone numbers, visit
-# notes and GPS coordinates. Keep them out of version control.
-# ---------------------------------------------------------------------------
+# Keep private shop and visit data out of version control
+/database/data.json
 backups/
 *backup*.json
 *backup*.csv

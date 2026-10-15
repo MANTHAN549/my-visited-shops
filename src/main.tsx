@@ -9,7 +9,7 @@ import 'leaflet/dist/leaflet.css'
  * Application entry point.
  *
  * HashRouter is used deliberately: the production build is hosted as static
- * files (GitHub Pages, a USB stick, any web server) and hash routing needs no
+ * files (a USB stick or any web server) and hash routing needs no
  * server-side rewrite rules, so deep links and refreshes always work.
  */
 const container = document.getElementById('root')

@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  addShop, getGithubConfig, initializeGithubStore, listShops, saveGithubConfig,
-  setGithubPassphrase, updateShop, deleteShop, addVisit, listVisits,
-} from '@/services/githubStore'
+  addShop, initializeLocalStore, listShops, setDataPassphrase,
+  updateShop, deleteShop, addVisit, listVisits,
+} from '@/services/localDataStore'
 import { listVisitsForShop } from '@/services/visitService'
 import type { Shop } from '@/types'
 
@@ -14,58 +14,52 @@ const shop: Shop = {
   lastVisitedAt: null, visitCount: 0,
 }
 
-describe('GitHub storage', () => {
+describe('local JSON storage', () => {
   let stored: Record<string, unknown> | null
-  let sha: string
+  let revision: string | null
   let puts: number
   let conflictOnce: boolean
-  let rawDownloads: number
 
   beforeEach(() => {
     localStorage.clear()
-    saveGithubConfig({ token: 'test-token', owner: 'owner', repo: 'data', branch: 'main' })
-    setGithubPassphrase(null)
+    setDataPassphrase(null)
     stored = null
-    sha = 'sha-1'
+    revision = null
     puts = 0
     conflictOnce = false
-    rawDownloads = 0
     vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-      if (String(input).endsWith('/repos/owner/data')) return new Response(JSON.stringify({ name: 'data' }), { status: 200 })
-      const accept = new Headers(init?.headers).get('Accept')
+      if (String(input) !== '/api/database') return new Response('', { status: 404 })
       if (init?.method === 'PUT') {
         puts += 1
         if (conflictOnce) { conflictOnce = false; return new Response('', { status: 409 }) }
-        const body = JSON.parse(String(init.body)) as { content: string }
-        stored = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(body.content), (char) => char.charCodeAt(0)))) as Record<string, unknown>
-        sha = `sha-${puts + 1}`
-        return new Response(JSON.stringify({ content: { sha } }), { status: 200 })
+        const body = JSON.parse(String(init.body)) as { document: Record<string, unknown>; expectedRevision: string | null }
+        if (body.expectedRevision !== revision) return new Response('', { status: 409 })
+        stored = body.document
+        revision = `revision-${puts}`
+        return new Response(JSON.stringify({ revision }), { status: 200 })
       }
-      if (!stored) return new Response('', { status: 404 })
-      if (accept === 'application/vnd.github.raw+json') { rawDownloads += 1; return new Response(JSON.stringify(stored), { status: 200 }) }
-      return new Response(JSON.stringify({ sha }), { status: 200 })
+      return new Response(JSON.stringify({ document: stored, revision }), { status: 200 })
     }))
   })
 
-  it('creates data.json on first write and preserves Unicode through encrypted round trips', async () => {
-    await initializeGithubStore('a strong passphrase for this test')
+  it('creates database/data.json on first write and preserves Unicode through encrypted round trips', async () => {
+    await initializeLocalStore('a strong passphrase for this test')
     await addShop(shop)
     expect(puts).toBe(2)
-    setGithubPassphrase('a strong passphrase for this test')
+    setDataPassphrase('a strong passphrase for this test')
     expect((await listShops())[0]?.name).toBe(shop.name)
     expect((await listShops())[0]?.notes).toBe(shop.notes)
-    expect(getGithubConfig().token).toBe('test-token')
   })
 
   it('rejects data when the passphrase is wrong', async () => {
-    await initializeGithubStore('correct passphrase')
+    await initializeLocalStore('correct passphrase')
     await addShop(shop)
-    setGithubPassphrase('incorrect passphrase')
+    setDataPassphrase('incorrect passphrase')
     await expect(listShops()).rejects.toThrow(/passphrase/i)
   })
 
-  it('re-fetches and retries a SHA conflict with the queued change', async () => {
-    await initializeGithubStore('a strong passphrase for this test')
+  it('re-fetches and retries a revision conflict with the queued change', async () => {
+    await initializeLocalStore('a strong passphrase for this test')
     conflictOnce = true
     await addShop(shop)
     expect(puts).toBe(3)
@@ -73,7 +67,7 @@ describe('GitHub storage', () => {
   })
 
   it('blocks writes while offline with an actionable message', async () => {
-    await initializeGithubStore('a strong passphrase for this test')
+    await initializeLocalStore('a strong passphrase for this test')
     Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
     try {
       await expect(addShop(shop)).rejects.toThrow(/offline/i)
@@ -83,7 +77,7 @@ describe('GitHub storage', () => {
   })
 
   it('keeps the newest same-id edit and records deletes as tombstones', async () => {
-    await initializeGithubStore('a strong passphrase for this test')
+    await initializeLocalStore('a strong passphrase for this test')
     await addShop(shop)
     await updateShop({ ...shop, name: 'newer shop', updatedAt: '2026-10-14T00:00:00.000Z' })
     await updateShop({ ...shop, name: 'stale shop', updatedAt: '2026-10-12T00:00:00.000Z' })
@@ -94,7 +88,7 @@ describe('GitHub storage', () => {
   })
 
   it('recalculates visit rollups and retains orphan visits', async () => {
-    await initializeGithubStore('a strong passphrase for this test')
+    await initializeLocalStore('a strong passphrase for this test')
     await addShop(shop)
     await addVisit({ id: 'visit-1', shopId: shop.id, visitedAt: '2026-10-14T12:00:00.000Z', note: '', purpose: '', amountSpent: '', createdAt: '2026-10-14T12:00:00.000Z', updatedAt: '2026-10-14T12:00:00.000Z' })
     await addVisit({ id: 'orphan-visit', shopId: 'missing-shop', visitedAt: '2026-10-14T13:00:00.000Z', note: 'keep me', purpose: '', amountSpent: '', createdAt: '2026-10-14T13:00:00.000Z', updatedAt: '2026-10-14T13:00:00.000Z' })
@@ -104,13 +98,13 @@ describe('GitHub storage', () => {
   })
 
   it('rejects an invalid downloaded document and uses raw downloads for large records', async () => {
-    await initializeGithubStore('a strong passphrase for this test')
+    await initializeLocalStore('a strong passphrase for this test')
     stored = { version: 99 }
     await expect(listShops()).rejects.toThrow(/invalid format/i)
     stored = null
-    await initializeGithubStore('a strong passphrase for this test')
+    revision = null
+    await initializeLocalStore('a strong passphrase for this test')
     await addShop({ ...shop, notes: 'x'.repeat(1_100_000) })
-    expect(rawDownloads).toBeGreaterThan(0)
     expect((await listShops())[0]?.notes).toHaveLength(1_100_000)
   })
 })

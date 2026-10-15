@@ -100,7 +100,7 @@ export default function ShopDetailsPage() {
     const answer = await confirm({
       title: `Delete ${shop.name}?`,
       message:
-        `This removes the shop, its coordinates and its contacts from the shared GitHub data file.\n\n` +
+        `This removes the shop, its coordinates and its contacts from the local database file.\n\n` +
         `This shop currently has ${shop.visitCount ?? 0} visit record${(shop.visitCount ?? 0) === 1 ? '' : 's'}.\n\n` +
         'Choose below whether those visit records should be deleted as well. You will be asked to confirm once more.',
       confirmLabel: 'Continue',
@@ -116,7 +116,7 @@ export default function ShopDetailsPage() {
     const finalCheck = await confirm({
       title: 'This cannot be undone',
       message: answer.checked
-        ? `â€œ${shop.name}â€ and all ${shop.visitCount ?? 0} of its visit records will be permanently removed from the shared GitHub data file.`
+        ? `â€œ${shop.name}â€ and all ${shop.visitCount ?? 0} of its visit records will be permanently removed from the local database file.`
         : `â€œ${shop.name}â€ will be permanently removed. Its ${shop.visitCount ?? 0} visit record(s) will be kept but unlinked.`,
       confirmLabel: 'Delete permanently',
       tone: 'danger',

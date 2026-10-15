@@ -9,13 +9,13 @@ const store = vi.hoisted(() => ({
     deleted: [],
   },
 }))
-vi.mock('@/services/githubStore', () => ({
-  refreshGithubData: async () => store.payload,
-  mergeAndUploadGithubData: async () => store.payload,
-  replaceGithubPayload: async () => store.payload,
+vi.mock('@/services/localDataStore', () => ({
+  refreshLocalData: async () => store.payload,
+  mergeAndSaveLocalData: async () => store.payload,
+  replaceLocalData: async () => store.payload,
 }))
 
-describe('GitHub data backups', () => {
+describe('local data backups', () => {
   beforeEach(() => { store.payload.shops = []; store.payload.visits = [] })
   it('encrypts and restores a JSON backup using its separate backup password', async () => {
     const result = await buildBackup({ encrypt: true, password: 'backup password' })

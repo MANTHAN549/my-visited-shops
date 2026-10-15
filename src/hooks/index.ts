@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { AppSettings } from '@/types'
 import { DEFAULT_SETTINGS } from '@/types'
-import { useGithubData, useGithubShops, useGithubVisits } from '@/services/githubDataContext'
+import { useLocalData, useLocalShops, useLocalVisits } from '@/services/localDataContext'
 import { getSettings } from '@/services/settingsService'
 import { listVisitsWithShops } from '@/services/visitService'
 
@@ -13,10 +13,10 @@ export function useRevision(): number {
   useEffect(() => { const listener = () => setValue(revision); listeners.add(listener); return () => { listeners.delete(listener) } }, [])
   return revision
 }
-export function useShops() { const revision = useRevision(); const data = useGithubShops(); const refresh = data.refresh; useEffect(() => { if (revision) void refresh() }, [revision, refresh]); return { ...data, data: data.shops, locked: false, reload: refresh } }
+export function useShops() { const revision = useRevision(); const data = useLocalShops(); const refresh = data.refresh; useEffect(() => { if (revision) void refresh() }, [revision, refresh]); return { ...data, data: data.shops, locked: false, reload: refresh } }
 export function useVisits() {
   const revision = useRevision()
-  const data = useGithubVisits()
+  const data = useLocalVisits()
   const refresh = data.refresh
   const [withShops, setWithShops] = useState<Awaited<ReturnType<typeof listVisitsWithShops>>>([])
   useEffect(() => { if (revision) void refresh(); void listVisitsWithShops().then(setWithShops).catch(() => setWithShops([])) }, [data.visits, revision, refresh])
@@ -28,7 +28,7 @@ export function useSessionState<T>(key: string, initial: T): [T, (value: T) => v
   return [value, update]
 }
 export function useSettings() {
-  const { settings, refresh } = useGithubData()
+  const { settings, refresh } = useLocalData()
   const [loaded, setLoaded] = useState<AppSettings>(DEFAULT_SETTINGS)
   useEffect(() => { setLoaded(settings) }, [settings])
   const update = async (patch: Partial<AppSettings>) => { const next = await (await import('@/services/settingsService')).saveSettings(patch); setLoaded(next); await refresh() }

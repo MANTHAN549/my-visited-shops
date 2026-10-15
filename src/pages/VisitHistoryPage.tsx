@@ -176,7 +176,7 @@ export default function VisitHistoryPage() {
     <>
       <PageHeader
         title="Shop Messages / Visit History"
-        description={`${pluralize(visits.length, 'visit record')} saved in the shared GitHub data file. Each visit keeps its own dated note.`}
+        description={`${pluralize(visits.length, 'visit record')} saved in the local database file. Each visit keeps its own dated note.`}
         icon={<MessageSquareText className="h-5 w-5 text-brand-700" />}
         actions={
           <>

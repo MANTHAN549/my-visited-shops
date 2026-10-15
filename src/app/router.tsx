@@ -8,7 +8,7 @@ import DashboardPage from '@/pages/DashboardPage'
  * Routing table.
  *
  * `HashRouter` is used (see main.tsx) so the production build works on static
- * hosts such as GitHub Pages without server rewrite rules. Routes below map
+ * hosts without server rewrite rules. Routes below map
  * one-to-one onto the pages required by the specification.
  */
 

@@ -1,8 +1,8 @@
 ﻿import type { BackupFile, BackupPayload, Shop, Visit } from '@/types'
 import { BACKUP_FORMAT_VERSION, DEFAULT_SETTINGS } from '@/types'
 import { nowIso } from '@/utils/format'
-import { decryptString, deriveKey, encryptString, randomBytes, bytesToBase64 } from './githubCrypto'
-import { refreshGithubData, mergeAndUploadGithubData, replaceGithubPayload } from './githubStore'
+import { decryptString, deriveKey, encryptString, randomBytes, bytesToBase64 } from './dataCrypto'
+import { refreshLocalData, mergeAndSaveLocalData, replaceLocalData } from './localDataStore'
 import { persistedSettingsSchema, persistedShopSchema, persistedVisitSchema } from './persistedSchemas'
 
 export const BACKUP_MIME = 'application/json'
@@ -27,7 +27,7 @@ async function digest(text: string): Promise<string> {
   return [...hash].map((value) => value.toString(16).padStart(2, '0')).join('')
 }
 export async function buildBackup(options: ExportOptions): Promise<{ filename: string; content: string; counts: { shops: number; visits: number }; encrypted: boolean }> {
-  const data = await refreshGithubData()
+  const data = await refreshLocalData()
   const payload: BackupPayload = { shops: data.shops, visits: data.visits, settings: options.includeSettings === false ? undefined : data.settings }
   const plaintext = JSON.stringify(payload)
   const envelope: BackupFile = { format: 'my-visited-shops-backup', version: BACKUP_FORMAT_VERSION, exportedAt: nowIso(), encrypted: options.encrypt, integrity: await digest(plaintext), counts: { shops: data.shops.length, visits: data.visits.length }, app: { name: 'My Visited Shops', version: '1.0.0' } }
@@ -64,7 +64,7 @@ export async function previewBackup(envelope: BackupFile, password?: string): Pr
   const shops: Shop[] = candidate.shops.map((item) => persistedShopSchema.parse(item))
   const shopIds = new Set(shops.map((item) => item.id))
   const visits: Visit[] = candidate.visits.map((item) => persistedVisitSchema.parse(item))
-  const current = await refreshGithubData()
+  const current = await refreshLocalData()
   const duplicateShopIds = shops.filter((item) => current.shops.some((old) => old.id === item.id)).map((item) => item.id)
   const duplicateVisitIds = visits.filter((item) => current.visits.some((old) => old.id === item.id)).map((item) => item.id)
   const conflicts = shops.filter((item) => current.shops.some((old) => old.id === item.id && old.updatedAt !== item.updatedAt)).map((item) => ({ id: item.id, name: item.name, reason: 'Same id exists with a different updated timestamp.' }))
@@ -74,9 +74,9 @@ export async function previewBackup(envelope: BackupFile, password?: string): Pr
 }
 export async function restoreBackup(preview: BackupPreview, options: RestoreOptions): Promise<RestoreResult> {
   if (!preview.payload) throw new Error('Decrypt the backup before restoring it.')
-  const incoming = { shops: preview.payload.shops, visits: preview.payload.visits, settings: options.applySettings ? persistedSettingsSchema.parse(preview.payload.settings ?? DEFAULT_SETTINGS) : (await refreshGithubData()).settings, deleted: [] }
-  if (options.mode === 'replace') await replaceGithubPayload(incoming)
-  else await mergeAndUploadGithubData(incoming)
+  const incoming = { shops: preview.payload.shops, visits: preview.payload.visits, settings: options.applySettings ? persistedSettingsSchema.parse(preview.payload.settings ?? DEFAULT_SETTINGS) : (await refreshLocalData()).settings, deleted: [] }
+  if (options.mode === 'replace') await replaceLocalData(incoming)
+  else await mergeAndSaveLocalData(incoming)
   return { importedShops: incoming.shops.length, importedVisits: incoming.visits.length, skippedShops: 0, skippedVisits: 0, mode: options.mode }
 }
 export async function readBackupFile(file: File): Promise<string> {

@@ -1,6 +1,6 @@
 import type { Visit, VisitWithShop } from '@/types'
 import { createId, nowIso, toDateKey } from '@/utils/format'
-import { addVisit, deleteVisit as deleteGithubVisit, getVisit, listVisits, searchVisits, updateVisit as updateGithubVisit, refreshGithubData } from './githubStore'
+import { addVisit, deleteVisit as deleteLocalVisit, getVisit, listVisits, searchVisits, updateVisit as updateLocalVisit, refreshLocalData } from './localDataStore'
 import { getShop, listShops } from './shopService'
 
 export interface VisitInput { shopId: string; visitedAt: string; note: string; purpose: string; amountSpent: string }
@@ -31,7 +31,7 @@ export async function createVisit(input: VisitInput): Promise<Visit> {
 export async function updateVisit(id: string, patch: Partial<Pick<Visit, 'note' | 'purpose' | 'amountSpent' | 'visitedAt'>>): Promise<Visit> {
   const existing = await getVisit(id)
   if (!existing) throw new Error('This visit record no longer exists.')
-  return updateGithubVisit({
+  return updateLocalVisit({
     ...existing,
     note: patch.note?.trim() ?? existing.note,
     purpose: patch.purpose?.trim() ?? existing.purpose,
@@ -40,20 +40,20 @@ export async function updateVisit(id: string, patch: Partial<Pick<Visit, 'note' 
     updatedAt: nowIso(),
   })
 }
-export async function deleteVisit(id: string): Promise<void> { await deleteGithubVisit(id) }
+export async function deleteVisit(id: string): Promise<void> { await deleteLocalVisit(id) }
 export async function deleteVisitsForShop(shopId: string): Promise<number> {
   const related = await listVisitsForShop(shopId)
-  await Promise.all(related.map((visit) => deleteGithubVisit(visit.id)))
+  await Promise.all(related.map((visit) => deleteLocalVisit(visit.id)))
   return related.length
 }
 export async function putVisits(visits: Visit[]): Promise<void> {
-  const current = await refreshGithubData()
+  const current = await refreshLocalData()
   await Promise.all(visits.map((visit) => addVisit(visit)))
   if (!visits.length) return
   void current
 }
-export async function recomputeShopRollup(_shopId: string): Promise<void> { await refreshGithubData() }
-export async function recomputeAllRollups(): Promise<void> { await refreshGithubData() }
+export async function recomputeShopRollup(_shopId: string): Promise<void> { await refreshLocalData() }
+export async function recomputeAllRollups(): Promise<void> { await refreshLocalData() }
 
 export interface VisitFilters { query: string; shopId: string; from: string; to: string }
 export function filterVisits(visits: VisitWithShop[], filters: VisitFilters): VisitWithShop[] {

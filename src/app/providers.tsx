@@ -83,7 +83,7 @@ export function useConfirm(): ConfirmContextValue['confirm'] {
 /* ------------------------------------------------------------------ */
 
 interface SessionContextValue {
-  /** Compatibility field; GitHub storage controls unlock in AppShell. */
+  /** Compatibility field; the local file store controls unlock in AppShell. */
   locked: boolean
   /** True when the installation uses encrypted storage. */
   encrypted: boolean

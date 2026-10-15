@@ -16,7 +16,7 @@ export default function AddShopPage() {
     bumpRevision()
     success(
       'Shop saved',
-      `${shop.name} was saved in the shared GitHub data file with its coordinates and ${shop.contacts.length} extra contact${
+      `${shop.name} was saved in the local database file with its coordinates and ${shop.contacts.length} extra contact${
         shop.contacts.length === 1 ? '' : 's'
       }.`,
     )

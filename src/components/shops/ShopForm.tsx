@@ -550,7 +550,7 @@ export function ShopForm({ shop, submitLabel, onSubmit, onCancel }: ShopFormProp
         </div>
 
         <p className="hint">
-          Stored in your private GitHub repository. Images are resized to a maximum of 800 px before saving
+          Stored in the encrypted local database file. Images are resized to a maximum of 800 px before saving
           {imageBytes > 0 ? ` (current: ${formatBytes(imageBytes)})` : ''}.
         </p>
       </section>

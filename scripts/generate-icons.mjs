@@ -11,7 +11,7 @@
  *   public/favicon.ico                  (32px PNG, named .ico for browsers)
  *
  * Committing the generated PNGs keeps the repository installable without running
- * this script, which matters for GitHub Pages deploys.
+ * this script, which matters for deployment installs.
  */
 import { mkdir, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'

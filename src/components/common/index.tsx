@@ -117,7 +117,7 @@ export function DataState({
       <EmptyState
         icon={<AlertCircle className="h-6 w-6" />}
         title="Your data is locked"
-        description="Enter your GitHub data passphrase to decrypt your shops and visit history."
+        description="Enter your data passphrase to decrypt your shops and visit history."
       />
     )
   }

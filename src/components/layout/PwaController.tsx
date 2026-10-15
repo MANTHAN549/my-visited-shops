@@ -9,7 +9,7 @@ import { useOnlineStatus } from '@/hooks'
  *  - an update prompt when a new build has been downloaded.
  *
  * The Service Worker only ever caches static application assets. User records
- * live in the encrypted GitHub data file. API responses are never written into the service worker cache.
+ * live in the encrypted local data file. Database API responses are never cached by the service worker.
  */
 export function PwaController() {
   const online = useOnlineStatus()

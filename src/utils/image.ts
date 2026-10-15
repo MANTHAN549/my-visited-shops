@@ -1,5 +1,5 @@
 ﻿/**
- * Image helpers - shrink a chosen photo before it is saved in the encrypted GitHub document.
+ * Image helpers - shrink a chosen photo before it is saved in the encrypted local document.
  *
  * Shop photos come from phone cameras and can be several megabytes. Storing them
  * raw would bloat the encrypted record and slow every decrypt, so images are

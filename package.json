@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Frontend-only PWA to save, search, contact and navigate back to shops you have visited. No backend, local-first, encrypted.",
+  "description": "Local app to save, search, contact and navigate back to shops you have visited. Encrypted JSON file storage.",
   "license": "MIT",
   "scripts": {
     "dev": "vite",
@@ -22,7 +22,6 @@
   "keywords": [],
   "author": "",
   "dependencies": {
-    "@supabase/supabase-js": "^2.117.3",
     "clsx": "^2.1.1",
     "dexie": "^4.4.6",
     "leaflet": "^1.9.4",

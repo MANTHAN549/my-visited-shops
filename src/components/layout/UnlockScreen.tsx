@@ -1,8 +1,8 @@
 ﻿import { Lock, ShieldCheck } from 'lucide-react'
 import { useState } from 'react'
 import { useToast } from '@/app/providers'
-import { initializeGithubStore } from '@/services/githubStore'
-import { useGithubData } from '@/services/githubDataContext'
+import { initializeLocalStore } from '@/services/localDataStore'
+import { useLocalData } from '@/services/localDataContext'
 import { Spinner } from '@/components/common'
 
 /**
@@ -13,7 +13,7 @@ import { Spinner } from '@/components/common'
  * anywhere and never stored.
  */
 export function UnlockScreen() {
-  const { refresh } = useGithubData()
+  const { refresh } = useLocalData()
   const { success, error: toastError } = useToast()
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
@@ -28,7 +28,7 @@ export function UnlockScreen() {
     setMessage(null)
 
     try {
-      await initializeGithubStore(password)
+      await initializeLocalStore(password)
       await refresh()
 
       setPassword('')
@@ -52,15 +52,15 @@ export function UnlockScreen() {
           </div>
           <h1 className="mt-4 text-xl font-semibold text-ink-900">My Visited Shops is locked</h1>
           <p className="mt-1 text-sm text-ink-500">
-            Your shop records and visit notes are encrypted in your private GitHub repository.
-            Enter the GitHub data passphrase to decrypt them.
+            Your shop records and visit notes are encrypted in the local database file.
+            Enter your data passphrase to decrypt them.
           </p>
         </div>
 
         <form onSubmit={handleUnlock} className="card p-5">
           <p className="mb-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-950">For a new data repository, set a passphrase with at least 12 characters. A forgotten passphrase cannot be recovered.</p>
           <label className="label" htmlFor="unlock-password">
-            GitHub data passphrase
+            Data passphrase
           </label>
           <input
             id="unlock-password"
@@ -70,7 +70,7 @@ export function UnlockScreen() {
             autoComplete="current-password"
             autoFocus
             onChange={(event) => setPassword(event.target.value)}
-            placeholder="GitHub data passphrase"
+            placeholder="Data passphrase"
           />
 
           {message && (

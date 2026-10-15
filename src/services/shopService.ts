@@ -1,6 +1,6 @@
 import type { Shop, ShopContact } from '@/types'
 import { createId, haversineMeters, nowIso } from '@/utils/format'
-import { addShop, deleteShop as deleteGithubShop, getShop, listShops, mergeAndUploadGithubData, refreshGithubData, updateShop as updateGithubShop } from './githubStore'
+import { addShop, deleteShop as deleteLocalShop, getShop, listShops, mergeAndSaveLocalData, refreshLocalData, updateShop as updateLocalShop } from './localDataStore'
 
 export interface ShopInput {
   name: string
@@ -41,7 +41,7 @@ export async function createShop(input: ShopInput): Promise<Shop> {
 export async function updateShop(id: string, input: ShopInput): Promise<Shop> {
   const existing = await getShop(id)
   if (!existing) throw new Error('This shop no longer exists.')
-  return updateGithubShop({
+  return updateLocalShop({
     ...existing, name: input.name.trim(), category: input.category.trim(), address: input.address.trim(),
     latitude: input.latitude, longitude: input.longitude, primaryOwnerName: input.primaryOwnerName.trim(),
     primaryOwnerPhone: input.primaryOwnerPhone.trim(), contacts: cleanContacts(input.contacts),
@@ -51,12 +51,12 @@ export async function updateShop(id: string, input: ShopInput): Promise<Shop> {
 }
 
 export async function deleteShop(id: string, deleteVisits: boolean): Promise<void> {
-  await deleteGithubShop(id, deleteVisits)
+  await deleteLocalShop(id, deleteVisits)
 }
 export async function countShops(): Promise<number> { return (await listShops()).length }
 export async function putShops(shops: Shop[]): Promise<void> {
-  const current = await refreshGithubData()
-  await mergeAndUploadGithubData({ ...current, shops })
+  const current = await refreshLocalData()
+  await mergeAndSaveLocalData({ ...current, shops })
 }
 export { listShops, getShop }
 

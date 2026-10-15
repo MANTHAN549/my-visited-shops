@@ -1,8 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Shop, Visit } from '@/types'
-import { hasGithubPassphrase, refreshGithubData, type GithubPayload } from './githubStore'
+import { hasDataPassphrase, refreshLocalData, type AppData } from './localDataStore'
 
-type GithubDataState = {
+type LocalDataState = {
   shops: Shop[]
   visits: Visit[]
   settings: import('@/types').AppSettings
@@ -13,10 +13,10 @@ type GithubDataState = {
   setSaving: (saving: boolean) => void
   unlocked: boolean
 }
-const GithubDataContext = createContext<GithubDataState | null>(null)
+const LocalDataContext = createContext<LocalDataState | null>(null)
 
-export function GithubDataProvider({ children }: { children: ReactNode }) {
-  const [payload, setPayload] = useState<GithubPayload>({ shops: [], visits: [], settings: {
+export function LocalDataProvider({ children }: { children: ReactNode }) {
+  const [payload, setPayload] = useState<AppData>({ shops: [], visits: [], settings: {
     mapLayer: 'osm', reverseGeocodingEnabled: false, routingBaseUrl: 'https://router.project-osrm.org',
     routingProfile: 'driving', geocodingBaseUrl: 'https://nominatim.openstreetmap.org',
     autoLockMinutes: 15, mobileListFirst: true,
@@ -27,8 +27,8 @@ export function GithubDataProvider({ children }: { children: ReactNode }) {
   const [unlocked, setUnlocked] = useState(false)
   const refresh = useCallback(async () => {
     setLoading(true)
-    try { setPayload(await refreshGithubData()); setError(null); setUnlocked(hasGithubPassphrase()) }
-    catch (failure) { setError(failure instanceof Error ? failure.message : 'Could not load GitHub data.') }
+    try { setPayload(await refreshLocalData()); setError(null); setUnlocked(hasDataPassphrase()) }
+    catch (failure) { setError(failure instanceof Error ? failure.message : 'Could not load local data.') }
     finally { setLoading(false) }
   }, [])
   useEffect(() => { void refresh() }, [refresh])
@@ -40,16 +40,16 @@ export function GithubDataProvider({ children }: { children: ReactNode }) {
   const value = useMemo(() => ({
     shops: payload.shops, visits: payload.visits, settings: payload.settings, loading, saving, error, refresh, setSaving, unlocked,
   }), [payload, loading, saving, error, refresh, unlocked])
-  return <GithubDataContext.Provider value={value}>{children}</GithubDataContext.Provider>
+  return <LocalDataContext.Provider value={value}>{children}</LocalDataContext.Provider>
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export function useGithubData(): GithubDataState {
-  const value = useContext(GithubDataContext)
-  if (!value) throw new Error('useGithubData must be used inside GithubDataProvider.')
+export function useLocalData(): LocalDataState {
+  const value = useContext(LocalDataContext)
+  if (!value) throw new Error('useLocalData must be used inside LocalDataProvider.')
   return value
 }
 // eslint-disable-next-line react-refresh/only-export-components
-export function useGithubShops() { const data = useGithubData(); return { shops: data.shops, loading: data.loading, saving: data.saving, error: data.error, refresh: data.refresh } }
+export function useLocalShops() { const data = useLocalData(); return { shops: data.shops, loading: data.loading, saving: data.saving, error: data.error, refresh: data.refresh } }
 // eslint-disable-next-line react-refresh/only-export-components
-export function useGithubVisits() { const data = useGithubData(); return { visits: data.visits, loading: data.loading, saving: data.saving, error: data.error, refresh: data.refresh } }
+export function useLocalVisits() { const data = useLocalData(); return { visits: data.visits, loading: data.loading, saving: data.saving, error: data.error, refresh: data.refresh } }

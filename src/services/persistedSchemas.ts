@@ -34,7 +34,7 @@ export const tombstoneSchema = z.object({
   id: z.string().min(1), type: z.enum(['shop', 'visit']), deletedAt: isoDate,
 }).strict()
 
-export const githubDocumentSchema = z.object({
+export const encryptedDataDocumentSchema = z.object({
   version: z.literal(2), updatedAt: isoDate,
   encryption: z.object({
     kdf: z.literal('PBKDF2-SHA256'), iterations: z.number().int().min(600_000),
@@ -42,7 +42,7 @@ export const githubDocumentSchema = z.object({
   }).strict(),
 }).strict()
 
-export const githubPayloadSchema = z.object({
+export const appDataSchema = z.object({
   shops: z.array(persistedShopSchema), visits: z.array(persistedVisitSchema),
   settings: persistedSettingsSchema, deleted: z.array(tombstoneSchema),
 }).strict()

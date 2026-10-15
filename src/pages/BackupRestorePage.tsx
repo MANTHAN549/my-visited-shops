@@ -154,10 +154,10 @@ export default function BackupRestorePage() {
       title: mode === 'replace' ? 'Replace all local records?' : 'Merge this backup into your data?',
       message:
         mode === 'replace'
-          ? `Every shop and visit in the shared GitHub data file will be replaced by the backup.\n\n` +
+          ? `Every shop and visit in the local database file will be replaced by the backup.\n\n` +
             `Shops to import: ${preview.counts.shops}\nVisit records to import: ${preview.counts.visits}\n\n` +
             'This cannot be undone. Consider exporting a backup of the current data first.'
-          : `The backup will be merged with the shared GitHub data file.\n\n` +
+          : `The backup will be merged with the local database file.\n\n` +
             `Shops to import: ${preview.counts.shops}\nVisit records to import: ${preview.counts.visits}\n\n` +
             `Records already here that were edited more recently are kept â€” nothing is silently overwritten.\n\n` +
             `Existing records with the same id: ${preview.duplicateShopIds.length} shop(s), ${preview.duplicateVisitIds.length} visit(s).`,
@@ -227,7 +227,7 @@ export default function BackupRestorePage() {
                 {pluralize(shops.length, 'shop')} Â· {pluralize(visits?.length ?? 0, 'visit record')}
               </p>
               <p className="mt-0.5 text-xs text-ink-500">
-                Exports contain a copy of data from your private GitHub repository.
+                Exports contain a copy of your local database data.
               </p>
             </div>
 
@@ -314,7 +314,7 @@ export default function BackupRestorePage() {
               <p className="hint">
                 Suggested file name: <code>{backupFilename()}</code>. The file includes shops,
                 contacts, notes, images, coordinates, visit records and the encryption metadata
-                needed to restore it. Your GitHub data passphrase is never included.
+                needed to restore it. Your data passphrase is never included.
               </p>
 
               {shops.length === 0 && (
@@ -431,7 +431,7 @@ export default function BackupRestorePage() {
                     </p>
                     <p className="mt-1">
                       {preview.duplicateShopIds.length} shop(s) and{' '}
-                      {preview.duplicateVisitIds.length} visit record(s) already exist in the GitHub data file
+                      {preview.duplicateVisitIds.length} visit record(s) already exist in the local database file
                       with the same ids. Merging keeps whichever copy was edited most recently.
                     </p>
                     {preview.conflicts.length > 0 && (
@@ -509,7 +509,7 @@ export default function BackupRestorePage() {
         </h2>
 
         <p className="mt-2 text-sm text-ink-600">
-          Your private GitHub repository keeps the same data available across devices. Keep an
+          Your local database file stores the data on this computer. Keep an
           exported backup as an independent recovery copy.
         </p>
 
@@ -532,7 +532,7 @@ export default function BackupRestorePage() {
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-800">
               3
             </span>
-            On another device, configure the same private GitHub repository and import the file.
+            To use this backup on another computer, import the file there.
             Enter the backup password to decrypt it.
           </li>
         </ol>

@@ -200,7 +200,7 @@ export default function AllShopsPage() {
 
     const answer = await confirm({
       title: `Delete ${shop.name}?`,
-      message: `This shop and its contacts will be removed from the shared GitHub data file. It has ${shop.visitCount ?? 0} visit record(s).`,
+      message: `This shop and its contacts will be removed from the local database file. It has ${shop.visitCount ?? 0} visit record(s).`,
       confirmLabel: 'Continue',
       tone: 'danger',
       checkbox: {
@@ -219,7 +219,7 @@ export default function AllShopsPage() {
     <>
       <PageHeader
         title="All Shops"
-        description={`${pluralize(shops.length, 'shop')} saved in the shared GitHub data file.`}
+        description={`${pluralize(shops.length, 'shop')} saved in the local database file.`}
         icon={<Store className="h-5 w-5 text-brand-700" />}
         actions={
           <>

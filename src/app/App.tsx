@@ -3,20 +3,16 @@ import { AppProviders } from '@/app/providers'
 import { AppRoutes } from '@/app/router'
 import { UnlockScreen } from '@/components/layout/UnlockScreen'
 import { Spinner } from '@/components/common'
-import { GithubDataProvider } from '@/services/githubDataContext'
-import { useGithubData } from '@/services/githubDataContext'
-import { getGithubConfig } from '@/services/githubStore'
+import { LocalDataProvider, useLocalData } from '@/services/localDataContext'
 
 /**
  * Startup gate.
  *
- * Order matters: the database is opened and its schema version checked before
- * anything reads or writes, then the encryption mode decides whether the unlock
- * screen or the application is shown. Any failure is reported with an actionable
- * message instead of a blank page.
+ * The local file server is checked before the application opens. The passphrase
+ * gate keeps encrypted records unavailable until they can be decrypted.
  */
 function AppShell() {
-  const { unlocked } = useGithubData()
+  const { unlocked } = useLocalData()
   const [bootError, setBootError] = useState<string | null>(null)
   const [booted, setBooted] = useState(true)
 
@@ -30,7 +26,7 @@ function AppShell() {
         if (!cancelled) {
           setBootError(
             (error as Error)?.message ??
-            'Could not initialize GitHub storage.',
+            'Could not initialize local storage.',
           )
         }
       }
@@ -70,8 +66,7 @@ function AppShell() {
     )
   }
 
-  const config = getGithubConfig()
-  if (config.token && config.owner && config.repo && !unlocked) return <UnlockScreen />
+  if (!unlocked) return <UnlockScreen />
 
   return <AppRoutes />
 }
@@ -79,9 +74,9 @@ function AppShell() {
 export default function App() {
   return (
     <AppProviders>
-      <GithubDataProvider>
+      <LocalDataProvider>
         <AppShell />
-      </GithubDataProvider>
+      </LocalDataProvider>
     </AppProviders>
   )
 }

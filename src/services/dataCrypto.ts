@@ -1,4 +1,4 @@
-﻿const MIN_ITERATIONS = 600_000
+const MIN_ITERATIONS = 600_000
 function webCrypto(): Crypto {
   if (!globalThis.crypto?.subtle) throw new Error('Web Crypto requires HTTPS or localhost.')
   return globalThis.crypto
@@ -15,7 +15,7 @@ function base64ToBytes(value: string): Uint8Array {
   return bytes
 }
 export async function deriveKey(passphrase: string, salt: string, iterations = MIN_ITERATIONS): Promise<CryptoKey> {
-  if (!passphrase) throw new Error('Enter the GitHub data passphrase to unlock your data.')
+  if (!passphrase) throw new Error('Enter your data passphrase to unlock your data.')
   if (iterations < MIN_ITERATIONS) throw new Error('PBKDF2 iterations must be at least 600,000.')
   const crypto = webCrypto()
   const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(passphrase) as unknown as BufferSource, 'PBKDF2', false, ['deriveKey'])
@@ -30,7 +30,7 @@ export async function decryptString(key: CryptoKey, iv: string, ciphertext: stri
   try {
     const plain = await webCrypto().subtle.decrypt({ name: 'AES-GCM', iv: base64ToBytes(iv) as unknown as BufferSource }, key, base64ToBytes(ciphertext) as unknown as BufferSource)
     return new TextDecoder().decode(plain)
-  } catch { throw new Error('Wrong GitHub data passphrase, or encrypted data is damaged.') }
+  } catch { throw new Error('Wrong data passphrase, or encrypted data is damaged.') }
 }
 export function unicodeRoundTrip(value: string): string { return new TextDecoder().decode(new TextEncoder().encode(value)) }
 export function base64RoundTrip(value: string): string { return new TextDecoder().decode(base64ToBytes(bytesToBase64(new TextEncoder().encode(value)))) }

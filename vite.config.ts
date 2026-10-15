@@ -1,30 +1,13 @@
 import { fileURLToPath } from 'node:url'
-import { loadEnv } from 'vite'
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import { databasePlugin } from './server/databasePlugin.ts'
 
-/**
- * Vite configuration.
- *
- * The public base path is read from the `VITE_BASE_PATH` environment variable so
- * the same code base can be deployed either at a domain root ("/") or under a
- * GitHub Pages project sub-path ("/my-visited-shops/").
- *
- *   npm run build                                    -> base "/"
- *   VITE_BASE_PATH=/my-visited-shops/ npm run build   -> base "/my-visited-shops/"
- *
- * The app uses hash based routing (HashRouter) so no server side rewrite rules
- * are required on GitHub Pages.
- */
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '')
-  const base = env.VITE_BASE_PATH || '/'
-
-
+export default defineConfig(() => {
   return {
-    base,
+    base: '/',
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -33,6 +16,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       tailwindcss(),
+      databasePlugin(),
       VitePWA({
         registerType: 'prompt',
         injectRegister: null,
@@ -41,7 +25,7 @@ export default defineConfig(({ mode }) => {
           name: 'My Visited Shops',
           short_name: 'Visited Shops',
           description:
-            "Track shops and visits across devices. Encrypted data is stored in your private GitHub repository.",
+            'Track shops and visits. Encrypted data is stored in the local project database.',
           theme_color: '#0f766e',
           background_color: '#f8fafc',
           display: 'standalone',
@@ -62,15 +46,15 @@ export default defineConfig(({ mode }) => {
           // Only static application assets are pre-cached. User records live in
           // IndexedDB and are never written to the Service Worker cache.
           globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest,woff2}'],
-          navigateFallback: `${base}index.html`,
+          navigateFallback: '/index.html',
           navigateFallbackDenylist: [/^\/api\//],
           cleanupOutdatedCaches: true,
           clientsClaim: false,
           skipWaiting: false,
           runtimeCaching: [
             {
-              // GitHub Contents API responses include private user data and must never enter Cache Storage.
-              urlPattern: /^https:\/\/api\.github\.com\/.*$/i,
+              // The local file API serves encrypted user data and must never enter Cache Storage.
+              urlPattern: /\/api\/database(?:\?.*)?$/,
               handler: 'NetworkOnly',
             },
             {
@@ -101,11 +85,11 @@ export default defineConfig(({ mode }) => {
       }),
     ],
     server: {
-      host: true,
+      host: '127.0.0.1',
       port: 5173,
     },
     preview: {
-      host: true,
+      host: '127.0.0.1',
       port: 4173,
     },
     build: {

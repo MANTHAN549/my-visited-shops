@@ -3,7 +3,7 @@
  *
  * The application works with these "domain" objects everywhere in the UI.
  * The database layer stores them in an encrypted envelope (see database/schema.ts
- * and services/githubCrypto.ts) so the persisted records in data.json remain
+ * and services/dataCrypto.ts) so the persisted records in database/data.json remain
  * encrypted outside the app.
  */
 
@@ -88,7 +88,7 @@ export interface VisitWithShop extends Visit {
   shop: Shop | null
 }
 
-/** User-facing application settings, persisted in the encrypted GitHub document. */
+/** User-facing application settings, persisted in the encrypted local document. */
 export interface AppSettings {
   /** Use the alternative OpenTopoMap tile layer. */
   mapLayer: 'osm' | 'topo'
