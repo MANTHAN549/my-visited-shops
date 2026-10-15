@@ -1,12 +1,10 @@
 /**
  * Vitest setup.
  *
- * - `fake-indexeddb` gives the Dexie layer a real IndexedDB implementation in Node.
  * - Web Crypto is taken from Node's implementation when the test environment does
  *   not expose `globalThis.crypto.subtle` (jsdom does not).
  * - `localStorage` / `sessionStorage` shims keep the hooks importable.
  */
-import 'fake-indexeddb/auto'
 import { webcrypto } from 'node:crypto'
 
 if (!globalThis.crypto || !globalThis.crypto.subtle) {

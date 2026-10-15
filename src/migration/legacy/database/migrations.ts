@@ -18,6 +18,8 @@ import { DB_VERSION, META_KEYS, STORES } from './schema'
 export function registerMigrations(db: Dexie): void {
   // Preserve the v1 shape on installed devices and add sync metadata in v2.
   const { syncQueue: _queue, syncState: _state, ...versionOneStores } = STORES
+  void _queue
+  void _state
   db.version(1).stores(versionOneStores)
   db.version(2).stores({ ...STORES })
 

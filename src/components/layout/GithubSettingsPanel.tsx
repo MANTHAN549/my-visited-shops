@@ -5,10 +5,12 @@ import {
   setGithubPassphrase, testGithubConnection,
 } from '@/services/githubStore'
 import { formatBytes } from '@/utils/image'
+import { useGithubData } from '@/services/githubDataContext'
 
 type Status = 'Saved' | 'Saving…' | 'Error'
 
 export function GithubSettingsPanel() {
+  const { refresh } = useGithubData()
   const [config, setConfig] = useState(getGithubConfig)
   const [secret, setSecret] = useState('')
   const [status, setStatus] = useState<Status>('Saved')
@@ -54,6 +56,7 @@ export function GithubSettingsPanel() {
     try {
       await initializeGithubStore(secret)
       setGithubPassphrase(secret)
+      await refresh()
       setSecret('')
       setStatus('Saved')
       setMessage('GitHub data is unlocked in memory for this session.')

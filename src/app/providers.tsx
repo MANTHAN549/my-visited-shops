@@ -17,14 +17,6 @@ import {
   type ReactNode,
 } from 'react'
 import type { ToastKind } from '@/types'
-import { getEncryptionMeta } from '@/services/settingsService'
-import {
-  clearSessionKey,
-  hasSessionKey,
-  setSessionKey,
-} from '@/services/encryptionService'
-import { bumpRevision } from '@/hooks'
-import { useSettings } from '@/hooks'
 
 /* ------------------------------------------------------------------ */
 /* Toasts                                                             */
@@ -91,7 +83,7 @@ export function useConfirm(): ConfirmContextValue['confirm'] {
 /* ------------------------------------------------------------------ */
 
 interface SessionContextValue {
-  /** True when encryption is enabled but no key is in memory. */
+  /** Compatibility field; GitHub storage controls unlock in AppShell. */
   locked: boolean
   /** True when the installation uses encrypted storage. */
   encrypted: boolean
@@ -185,68 +177,12 @@ export function AppProviders({ children }: { children: ReactNode }) {
   const confirmValue = useMemo<ConfirmContextValue>(() => ({ confirm }), [confirm])
 
   /* session */
-  const [session, setSession] = useState({
-    ready: false,
-    encrypted: false,
-    locked: false,
-  })
-
-  const refreshSession = useCallback(async () => {
-    try {
-      const meta = await getEncryptionMeta()
-      const encrypted = meta.mode === 'encrypted'
-      setSession({ ready: true, encrypted, locked: encrypted && !hasSessionKey() })
-    } catch {
-      setSession({ ready: true, encrypted: false, locked: false })
-    }
-  }, [])
-
-  useEffect(() => {
-    void refreshSession()
-  }, [refreshSession])
-
-  const markUnlocked = useCallback(() => {
-    setSession((current) => ({ ...current, locked: false }))
-    bumpRevision()
-  }, [])
-
-  const lockNow = useCallback(() => {
-    clearSessionKey()
-    setSession((current) => ({ ...current, locked: true }))
-    bumpRevision()
-  }, [])
-
-  /* auto lock */
-  const { settings } = useSettings()
-
-  useEffect(() => {
-    if (!session.encrypted || session.locked) return
-    const minutes = settings.autoLockMinutes
-    if (!minutes || minutes <= 0) return
-
-    let timer: ReturnType<typeof setTimeout>
-    const reset = () => {
-      clearTimeout(timer)
-      timer = setTimeout(() => lockNow(), minutes * 60_000)
-    }
-
-    const windowEvents = ['pointerdown', 'keydown', 'wheel', 'touchstart'] as const
-    const onVisibilityChange = () => reset()
-
-    for (const event of windowEvents) window.addEventListener(event, reset, { passive: true })
-    document.addEventListener('visibilitychange', onVisibilityChange)
-    reset()
-
-    return () => {
-      clearTimeout(timer)
-      for (const event of windowEvents) window.removeEventListener(event, reset)
-      document.removeEventListener('visibilitychange', onVisibilityChange)
-    }
-  }, [session.encrypted, session.locked, settings.autoLockMinutes, lockNow])
+  const markUnlocked = useCallback(() => undefined, [])
+  const lockNow = useCallback(() => undefined, [])
 
   const sessionValue = useMemo<SessionContextValue>(
-    () => ({ ...session, markUnlocked, lockNow }),
-    [session, markUnlocked, lockNow],
+    () => ({ ready: true, encrypted: true, locked: false, markUnlocked, lockNow }),
+    [markUnlocked, lockNow],
   )
 
   return (

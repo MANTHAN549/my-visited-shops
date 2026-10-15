@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+﻿import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Plus } from 'lucide-react'
 import { PageHeader } from '@/components/common'
 import { ShopForm } from '@/components/shops/ShopForm'
@@ -16,7 +16,7 @@ export default function AddShopPage() {
     bumpRevision()
     success(
       'Shop saved',
-      `${shop.name} was saved on this device with its coordinates and ${shop.contacts.length} extra contact${
+      `${shop.name} was saved in the shared GitHub data file with its coordinates and ${shop.contacts.length} extra contact${
         shop.contacts.length === 1 ? '' : 's'
       }.`,
     )
@@ -45,3 +45,4 @@ export default function AddShopPage() {
     </>
   )
 }
+

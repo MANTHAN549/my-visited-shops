@@ -1,5 +1,5 @@
-/**
- * Image helpers - shrink a chosen photo before it is stored in IndexedDB.
+﻿/**
+ * Image helpers - shrink a chosen photo before it is saved in the encrypted GitHub document.
  *
  * Shop photos come from phone cameras and can be several megabytes. Storing them
  * raw would bloat the encrypted record and slow every decrypt, so images are
@@ -83,3 +83,4 @@ export function formatBytes(bytes: number): string {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
+

@@ -3,8 +3,8 @@
  *
  * The application works with these "domain" objects everywhere in the UI.
  * The database layer stores them in an encrypted envelope (see database/schema.ts
- * and services/encryptionService.ts) so that only a small number of index fields
- * remain readable inside IndexedDB.
+ * and services/githubCrypto.ts) so the persisted records in data.json remain
+ * encrypted outside the app.
  */
 
 /** A single owner / manager / staff contact for a shop. */
@@ -88,7 +88,7 @@ export interface VisitWithShop extends Visit {
   shop: Shop | null
 }
 
-/** Application settings, persisted in IndexedDB. */
+/** User-facing application settings, persisted in the encrypted GitHub document. */
 export interface AppSettings {
   /** Use the alternative OpenTopoMap tile layer. */
   mapLayer: 'osm' | 'topo'

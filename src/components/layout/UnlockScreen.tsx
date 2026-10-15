@@ -1,11 +1,9 @@
-import { Lock, ShieldCheck } from 'lucide-react'
+﻿import { Lock, ShieldCheck } from 'lucide-react'
 import { useState } from 'react'
 import { useToast } from '@/app/providers'
-import { getEncryptionMeta, saveEncryptionMeta } from '@/services/settingsService'
-import { setSessionKey, unlockWithPassword } from '@/services/encryptionService'
+import { setGithubPassphrase, refreshGithubData } from '@/services/githubStore'
+import { useGithubData } from '@/services/githubDataContext'
 import { Spinner } from '@/components/common'
-import { bumpRevision } from '@/hooks'
-import { useSession } from '@/app/providers'
 
 /**
  * Full-screen unlock gate shown when the installation uses encrypted storage and
@@ -15,7 +13,7 @@ import { useSession } from '@/app/providers'
  * anywhere and never stored.
  */
 export function UnlockScreen() {
-  const { markUnlocked } = useSession()
+  const { refresh } = useGithubData()
   const { success, error: toastError } = useToast()
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
@@ -30,25 +28,12 @@ export function UnlockScreen() {
     setMessage(null)
 
     try {
-      const meta = await getEncryptionMeta()
-      const key = await unlockWithPassword(password, meta)
-      setSessionKey(key)
-      // Sanity check that the key really works on this database before declaring
-      // success: derive + verifier match is not the same as records decoding.
-      const { canRead } = await import('@/services/shopService')
-      if (!(await canRead())) throw new Error('Unlock failed.')
-
-      // Refresh the stored verifier in case the row was written by an older build.
-      if (!meta.verifier || !meta.verifierIv) {
-        const { createVerifier } = await import('@/services/encryptionService')
-        const { verifier, verifierIv } = await createVerifier(key)
-        await saveEncryptionMeta({ ...meta, verifier, verifierIv })
-      }
+      setGithubPassphrase(password)
+      await refreshGithubData()
+      await refresh()
 
       setPassword('')
       success('Unlocked', 'Your shops and visit history are available.')
-      bumpRevision()
-      markUnlocked()
     } catch (err) {
       setAttempts((n) => n + 1)
       const text = (err as Error).message || 'Unable to unlock.'
@@ -68,14 +53,14 @@ export function UnlockScreen() {
           </div>
           <h1 className="mt-4 text-xl font-semibold text-ink-900">My Visited Shops is locked</h1>
           <p className="mt-1 text-sm text-ink-500">
-            Your shop records and visit notes are encrypted on this device. Enter your master
-            password to decrypt them.
+            Your shop records and visit notes are encrypted in your private GitHub repository.
+            Enter the GitHub data passphrase to decrypt them.
           </p>
         </div>
 
         <form onSubmit={handleUnlock} className="card p-5">
           <label className="label" htmlFor="unlock-password">
-            Master password
+            GitHub data passphrase
           </label>
           <input
             id="unlock-password"
@@ -85,7 +70,7 @@ export function UnlockScreen() {
             autoComplete="current-password"
             autoFocus
             onChange={(event) => setPassword(event.target.value)}
-            placeholder="Your master password"
+            placeholder="GitHub data passphrase"
           />
 
           {message && (
@@ -98,8 +83,8 @@ export function UnlockScreen() {
             <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
               <p className="font-semibold">Still locked?</p>
               <p className="mt-1">
-                Passwords are case sensitive. There is no backdoor or recovery code — if the
-                password is lost, the encrypted records cannot be recovered. If you have an
+                Passphrases are case sensitive. There is no recovery code; if it is forgotten,
+                the encrypted records cannot be recovered. If you have an
                 encrypted backup file, you can still restore it with the password you used when
                 exporting it.
               </p>
@@ -108,7 +93,7 @@ export function UnlockScreen() {
 
           <button type="submit" className="btn-primary mt-4 w-full" disabled={busy || !password}>
             {busy ? <Spinner className="text-white" /> : <ShieldCheck className="h-4 w-4" />}
-            {busy ? 'Unlocking…' : 'Unlock'}
+            {busy ? 'Unlockingâ€¦' : 'Unlock'}
           </button>
 
           <p className="mt-3 text-center text-xs text-ink-400">
@@ -117,10 +102,10 @@ export function UnlockScreen() {
         </form>
 
         <p className="mt-4 text-center text-xs text-ink-400">
-          Locking protects your data on a shared device. It is not a defence against malicious code
-          running in this browser origin.
+          The passphrase stays in memory only and is requested again when the app opens.
         </p>
       </div>
     </div>
   )
 }
+

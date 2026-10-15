@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -100,13 +100,13 @@ export default function ShopDetailsPage() {
     const answer = await confirm({
       title: `Delete ${shop.name}?`,
       message:
-        `This removes the shop, its coordinates and its contacts from this device.\n\n` +
+        `This removes the shop, its coordinates and its contacts from the shared GitHub data file.\n\n` +
         `This shop currently has ${shop.visitCount ?? 0} visit record${(shop.visitCount ?? 0) === 1 ? '' : 's'}.\n\n` +
         'Choose below whether those visit records should be deleted as well. You will be asked to confirm once more.',
       confirmLabel: 'Continue',
       tone: 'danger',
       checkbox: {
-        label: 'Also delete this shop’s visit history',
+        label: 'Also delete this shopâ€™s visit history',
         defaultChecked: true,
         hint: 'If you leave this unchecked, the visit notes are kept but will no longer be linked to a shop.',
       },
@@ -116,8 +116,8 @@ export default function ShopDetailsPage() {
     const finalCheck = await confirm({
       title: 'This cannot be undone',
       message: answer.checked
-        ? `“${shop.name}” and all ${shop.visitCount ?? 0} of its visit records will be permanently removed from this device.`
-        : `“${shop.name}” will be permanently removed. Its ${shop.visitCount ?? 0} visit record(s) will be kept but unlinked.`,
+        ? `â€œ${shop.name}â€ and all ${shop.visitCount ?? 0} of its visit records will be permanently removed from the shared GitHub data file.`
+        : `â€œ${shop.name}â€ will be permanently removed. Its ${shop.visitCount ?? 0} visit record(s) will be kept but unlinked.`,
       confirmLabel: 'Delete permanently',
       tone: 'danger',
     })
@@ -332,7 +332,7 @@ export default function ShopDetailsPage() {
                             </p>
                             <p className="text-xs text-ink-500">
                               {contact.role ?? 'Contact'}
-                              {contact.phone ? ` · ${formatPhoneDisplay(contact.phone)}` : ''}
+                              {contact.phone ? ` Â· ${formatPhoneDisplay(contact.phone)}` : ''}
                             </p>
                             {contact.notes && (
                               <p className="mt-0.5 text-xs text-ink-400">{contact.notes}</p>
@@ -403,7 +403,7 @@ export default function ShopDetailsPage() {
                     <EmptyState
                       icon={<CalendarPlus className="h-6 w-6" />}
                       title="No visits recorded for this shop"
-                      description="Use “Mark Visit as Done” to keep a dated note of what you bought or discussed."
+                      description="Use â€œMark Visit as Doneâ€ to keep a dated note of what you bought or discussed."
                       action={
                         <button
                           type="button"
@@ -505,3 +505,4 @@ export default function ShopDetailsPage() {
     </>
   )
 }
+

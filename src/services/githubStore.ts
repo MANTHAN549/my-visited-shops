@@ -1,6 +1,6 @@
 import type { AppSettings, Shop, Visit } from '@/types'
 import { DEFAULT_SETTINGS } from '@/types'
-import { decryptString, deriveKey, encryptString, randomBytes, bytesToBase64 } from './encryptionService'
+import { decryptString, deriveKey, encryptString, randomBytes, bytesToBase64 } from './githubCrypto'
 import { githubDocumentSchema, githubPayloadSchema, persistedSettingsSchema, persistedShopSchema, persistedVisitSchema, tombstoneSchema, type Tombstone } from './persistedSchemas'
 
 const CACHE_KEY = 'gh_data_cache'
@@ -163,7 +163,7 @@ async function fetchFresh(): Promise<{ payload: GithubPayload; sha: string | nul
     ? metadataJson.sha
     : null
   if (!sha) throw new Error('GitHub did not provide the current file revision.')
-  localStorage.setItem(CACHE_KEY, JSON.stringify({ version: 2, payload }))
+  localStorage.setItem(CACHE_KEY, JSON.stringify({ version: 2, wire: valid.data }))
   return { payload, sha, salt: valid.data.encryption.salt }
 }
 export async function refreshGithubData(): Promise<GithubPayload> {
@@ -173,7 +173,10 @@ export async function refreshGithubData(): Promise<GithubPayload> {
       const cache = localStorage.getItem(CACHE_KEY)
       if (cache) {
         const parsed: unknown = JSON.parse(cache)
-        if (parsed && typeof parsed === 'object' && 'payload' in parsed) return githubPayloadSchema.parse(parsed.payload)
+        if (parsed && typeof parsed === 'object' && 'wire' in parsed) {
+          const cachedDocument = githubDocumentSchema.safeParse(parsed.wire)
+          if (cachedDocument.success) return await decryptWire(cachedDocument.data as WireDocument)
+        }
       }
     }
     throw error
@@ -186,6 +189,13 @@ export async function mergeAndUploadGithubData(incoming: GithubPayload): Promise
       ...combined,
       settings: isNew ? incoming.settings : current.settings,
     }
+  }))
+}
+export async function replaceGithubPayload(incoming: GithubPayload): Promise<GithubPayload> {
+  return enqueue(() => updateFile((current) => {
+    const keptIds = new Set([...incoming.shops.map((item) => `shop:${item.id}`), ...incoming.visits.map((item) => `visit:${item.id}`)])
+    const deleted = [...incoming.deleted, ...current.deleted.filter((item) => !keptIds.has(`${item.type}:${item.id}`)), ...current.shops.filter((item) => !keptIds.has(`shop:${item.id}`)).map((item) => tombstoneSchema.parse({ id: item.id, type: 'shop', deletedAt: new Date().toISOString() })), ...current.visits.filter((item) => !keptIds.has(`visit:${item.id}`)).map((item) => tombstoneSchema.parse({ id: item.id, type: 'visit', deletedAt: new Date().toISOString() }))]
+    return mergeGithubPayload(emptyPayload(), { ...incoming, deleted })
   }))
 }
 export async function testGithubConnection(): Promise<number> {
@@ -213,7 +223,7 @@ async function updateFile(change: (current: GithubPayload, isNew: boolean) => Gi
       body: JSON.stringify(body),
     })
     if (response.ok) {
-      localStorage.setItem(CACHE_KEY, JSON.stringify({ version: 2, payload }))
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ version: 2, wire }))
       return payload
     }
     lastError = apiError(response.status, rateLimitSignal(response))
@@ -274,6 +284,13 @@ export function saveGithubSettings(settings: AppSettings): Promise<AppSettings> 
   return enqueue(async () => { await updateFile((data) => ({ ...data, settings: validated })); return validated })
 }
 export function clearGithubCache(): void { localStorage.removeItem(CACHE_KEY) }
+export function eraseGithubData(): Promise<void> {
+  return enqueue(async () => { await updateFile((data) => ({ ...emptyPayload(), deleted: [
+    ...data.deleted,
+    ...data.shops.map((shop) => tombstoneSchema.parse({ id: shop.id, type: 'shop', deletedAt: new Date().toISOString() })),
+    ...data.visits.map((visit) => tombstoneSchema.parse({ id: visit.id, type: 'visit', deletedAt: new Date().toISOString() })),
+  ] })) })
+}
 
 function emptyPayloadWithRecords(shops: Shop[], visits: Visit[], settings: AppSettings, deleted: Tombstone[]): GithubPayload {
   return { shops, visits, settings, deleted }

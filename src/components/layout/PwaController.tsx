@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { Download, RefreshCw, WifiOff, X } from 'lucide-react'
 import { registerSW } from 'virtual:pwa-register'
 import { useOnlineStatus } from '@/hooks'
@@ -9,7 +9,7 @@ import { useOnlineStatus } from '@/hooks'
  *  - an update prompt when a new build has been downloaded.
  *
  * The Service Worker only ever caches static application assets. User records
- * live in IndexedDB and are never written into the SW cache.
+ * live in the encrypted GitHub data file. API responses are never written into the service worker cache.
  */
 export function PwaController() {
   const online = useOnlineStatus()
@@ -48,7 +48,7 @@ export function PwaController() {
       {!online && (
         <div className="flex items-center justify-center gap-2 bg-amber-100 px-3 py-1.5 text-xs font-medium text-amber-900">
           <WifiOff className="h-3.5 w-3.5" />
-          Offline — your saved shops and notes are still available. Maps and routing need a
+          Offline â€” your saved shops and notes are still available. Maps and routing need a
           connection unless the tiles are already cached.
         </div>
       )}
@@ -87,3 +87,4 @@ export function PwaController() {
     </>
   )
 }
+

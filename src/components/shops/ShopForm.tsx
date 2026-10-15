@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   AlertTriangle,
   Crosshair,
@@ -166,7 +166,7 @@ export function ShopForm({ shop, submitLabel, onSubmit, onCancel }: ShopFormProp
         title: 'Send coordinates to an address provider?',
         message:
           'Looking up an address sends this shop\'s latitude and longitude to the configured geocoding service ' +
-          `(${new URL(settings.geocodingBaseUrl).host}).\n\nYou can always type the address yourself instead — ` +
+          `(${new URL(settings.geocodingBaseUrl).host}).\n\nYou can always type the address yourself instead â€” ` +
           'no address provider is required to save a shop.',
         confirmLabel: 'Look up address',
         cancelLabel: 'Type it myself',
@@ -188,7 +188,7 @@ export function ShopForm({ shop, submitLabel, onSubmit, onCancel }: ShopFormProp
     try {
       const compressed = await compressImageFile(file)
       patch({ imageDataUrl: compressed.dataUrl })
-      success('Image attached', `Resized to ${compressed.width}×${compressed.height} (${formatBytes(compressed.bytes)}).`)
+      success('Image attached', `Resized to ${compressed.width}Ã—${compressed.height} (${formatBytes(compressed.bytes)}).`)
     } catch (err) {
       toastError('Could not use that image', (err as Error).message)
     } finally {
@@ -228,7 +228,7 @@ export function ShopForm({ shop, submitLabel, onSubmit, onCancel }: ShopFormProp
       const answer = await confirm({
         title: 'Possible duplicate shop',
         message: `This looks like it may already be saved:\n\n${duplicates
-          .map((d) => `• ${d.shop.name} — ${d.reason}`)
+          .map((d) => `â€¢ ${d.shop.name} â€” ${d.reason}`)
           .join('\n')}\n\nSave anyway? Nothing is merged automatically.`,
         confirmLabel: 'Save anyway',
         cancelLabel: 'Go back and review',
@@ -316,7 +316,7 @@ export function ShopForm({ shop, submitLabel, onSubmit, onCancel }: ShopFormProp
             disabled={locating}
           >
             {locating ? <Spinner className="text-white" /> : <LocateFixed className="h-4 w-4" />}
-            {locating ? 'Reading GPS…' : 'Use Current Location'}
+            {locating ? 'Reading GPSâ€¦' : 'Use Current Location'}
           </button>
 
           <button
@@ -550,7 +550,7 @@ export function ShopForm({ shop, submitLabel, onSubmit, onCancel }: ShopFormProp
         </div>
 
         <p className="hint">
-          Stored on this device only. Images are resized to a maximum of 1024 px before saving
+          Stored in your private GitHub repository. Images are resized to a maximum of 800 px before saving
           {imageBytes > 0 ? ` (current: ${formatBytes(imageBytes)})` : ''}.
         </p>
       </section>
@@ -570,7 +570,7 @@ export function ShopForm({ shop, submitLabel, onSubmit, onCancel }: ShopFormProp
       <div className="sticky bottom-[4.25rem] z-10 flex flex-wrap items-center gap-2 rounded-xl border border-ink-200 bg-white/95 p-3 shadow-[var(--shadow-card)] backdrop-blur md:bottom-2">
         <button type="submit" className="btn-primary" disabled={saving}>
           {saving ? <Spinner className="text-white" /> : <Save className="h-4 w-4" />}
-          {saving ? 'Saving…' : submitLabel}
+          {saving ? 'Savingâ€¦' : submitLabel}
         </button>
 
         <button type="button" className="btn-secondary" onClick={handleReset} disabled={saving}>
@@ -600,3 +600,4 @@ export function emptyShopFormState() {
 }
 
 export { createId }
+

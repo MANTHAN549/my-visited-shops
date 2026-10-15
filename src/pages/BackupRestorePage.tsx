@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+﻿import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   AlertTriangle,
@@ -14,7 +14,7 @@ import {
 } from 'lucide-react'
 import { DataState, EmptyState, PageHeader, Spinner } from '@/components/common'
 import { useConfirm, useToast } from '@/app/providers'
-import { bumpRevision, useEncryptionMeta, useShops, useVisits } from '@/hooks'
+import { bumpRevision, useShops, useVisits } from '@/hooks'
 import {
   backupFilename,
   buildBackup,
@@ -35,7 +35,6 @@ export default function BackupRestorePage() {
   const { success, error: toastError, warning, info } = useToast()
   const confirm = useConfirm()
 
-  const { meta } = useEncryptionMeta()
   const { shops, loading, error, locked, reload } = useShops()
   const { data: visits } = useVisits()
 
@@ -86,7 +85,7 @@ export default function BackupRestorePage() {
         success(
           'Encrypted backup downloaded',
           `${pluralize(result.counts.shops, 'shop')} and ${pluralize(result.counts.visits, 'visit record')} written to ${result.filename}. ` +
-            'Remember the backup password — without it the file cannot be restored.',
+            'Remember the backup password â€” without it the file cannot be restored.',
         )
       } else {
         warning(
@@ -155,12 +154,12 @@ export default function BackupRestorePage() {
       title: mode === 'replace' ? 'Replace all local records?' : 'Merge this backup into your data?',
       message:
         mode === 'replace'
-          ? `Every shop and visit currently on this device will be deleted and replaced by the backup.\n\n` +
+          ? `Every shop and visit in the shared GitHub data file will be replaced by the backup.\n\n` +
             `Shops to import: ${preview.counts.shops}\nVisit records to import: ${preview.counts.visits}\n\n` +
             'This cannot be undone. Consider exporting a backup of the current data first.'
-          : `The backup will be merged with what is already on this device.\n\n` +
+          : `The backup will be merged with the shared GitHub data file.\n\n` +
             `Shops to import: ${preview.counts.shops}\nVisit records to import: ${preview.counts.visits}\n\n` +
-            `Records already here that were edited more recently are kept — nothing is silently overwritten.\n\n` +
+            `Records already here that were edited more recently are kept â€” nothing is silently overwritten.\n\n` +
             `Existing records with the same id: ${preview.duplicateShopIds.length} shop(s), ${preview.duplicateVisitIds.length} visit(s).`,
       confirmLabel: mode === 'replace' ? 'Replace everything' : 'Merge records',
       tone: mode === 'replace' ? 'danger' : 'default',
@@ -199,7 +198,6 @@ export default function BackupRestorePage() {
     setStage('idle')
   }
 
-  const currentEncrypted = meta?.mode === 'encrypted'
 
   return (
     <>
@@ -226,10 +224,10 @@ export default function BackupRestorePage() {
           <DataState loading={loading} error={error} locked={locked} onRetry={reload}>
             <div className="mt-3 rounded-lg border border-ink-200 bg-ink-50 p-3 text-sm">
               <p className="font-medium text-ink-800">
-                {pluralize(shops.length, 'shop')} · {pluralize(visits?.length ?? 0, 'visit record')}
+                {pluralize(shops.length, 'shop')} Â· {pluralize(visits?.length ?? 0, 'visit record')}
               </p>
               <p className="mt-0.5 text-xs text-ink-500">
-                Local storage mode: {currentEncrypted ? 'encrypted (AES-GCM)' : 'not encrypted'}.
+                Exports contain a copy of data from your private GitHub repository.
               </p>
             </div>
 
@@ -310,13 +308,13 @@ export default function BackupRestorePage() {
                 disabled={exporting || shops.length === 0}
               >
                 {exporting ? <Spinner className="text-white" /> : <HardDriveDownload className="h-4 w-4" />}
-                {exporting ? 'Preparing…' : 'Download backup file'}
+                {exporting ? 'Preparingâ€¦' : 'Download backup file'}
               </button>
 
               <p className="hint">
                 Suggested file name: <code>{backupFilename()}</code>. The file includes shops,
                 contacts, notes, images, coordinates, visit records and the encryption metadata
-                needed to restore it. Your master password is never included.
+                needed to restore it. Your GitHub data passphrase is never included.
               </p>
 
               {shops.length === 0 && (
@@ -358,9 +356,9 @@ export default function BackupRestorePage() {
               <div className="mt-3 rounded-lg border border-ink-200 bg-ink-50 p-3">
                 <p className="truncate text-sm font-medium text-ink-800">{file.name}</p>
                 <p className="text-xs text-ink-500">
-                  {(file.size / 1024).toFixed(1)} KB ·{' '}
-                  {envelope?.encrypted ? 'encrypted backup' : 'plain backup'} · format v
-                  {envelope?.version} · exported {formatDateTime(envelope?.exportedAt)}
+                  {(file.size / 1024).toFixed(1)} KB Â·{' '}
+                  {envelope?.encrypted ? 'encrypted backup' : 'plain backup'} Â· format v
+                  {envelope?.version} Â· exported {formatDateTime(envelope?.exportedAt)}
                 </p>
               </div>
             )}
@@ -401,7 +399,7 @@ export default function BackupRestorePage() {
                   Decrypt and preview
                 </button>
                 <p className="hint">
-                  An incorrect password cannot decrypt the file — you will be told, and nothing will be
+                  An incorrect password cannot decrypt the file â€” you will be told, and nothing will be
                   imported.
                 </p>
               </div>
@@ -423,6 +421,8 @@ export default function BackupRestorePage() {
                   </ul>
                 </div>
 
+                {preview.orphanVisitCount > 0 && <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">This backup contains {preview.orphanVisitCount} orphan visit record(s) without a matching shop. They remain in the backup and will be preserved during restore.</div>}
+
                 {(preview.duplicateShopIds.length > 0 || preview.duplicateVisitIds.length > 0) && (
                   <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
                     <p className="flex items-center gap-1.5 font-semibold">
@@ -431,18 +431,18 @@ export default function BackupRestorePage() {
                     </p>
                     <p className="mt-1">
                       {preview.duplicateShopIds.length} shop(s) and{' '}
-                      {preview.duplicateVisitIds.length} visit record(s) already exist on this device
+                      {preview.duplicateVisitIds.length} visit record(s) already exist in the GitHub data file
                       with the same ids. Merging keeps whichever copy was edited most recently.
                     </p>
                     {preview.conflicts.length > 0 && (
                       <ul className="mt-1.5 list-disc space-y-0.5 pl-4">
                         {preview.conflicts.slice(0, 5).map((conflict) => (
                           <li key={conflict.id}>
-                            <strong>{conflict.name}</strong> — {conflict.reason}
+                            <strong>{conflict.name}</strong> â€” {conflict.reason}
                           </li>
                         ))}
                         {preview.conflicts.length > 5 && (
-                          <li>…and {preview.conflicts.length - 5} more</li>
+                          <li>â€¦and {preview.conflicts.length - 5} more</li>
                         )}
                       </ul>
                     )}
@@ -509,8 +509,8 @@ export default function BackupRestorePage() {
         </h2>
 
         <p className="mt-2 text-sm text-ink-600">
-          Your records are stored only in this browser on this device. Nothing is synchronised
-          automatically, and no backup is ever uploaded anywhere.
+          Your private GitHub repository keeps the same data available across devices. Keep an
+          exported backup as an independent recovery copy.
         </p>
 
         <ol className="mt-3 space-y-2 text-sm text-ink-700">
@@ -518,13 +518,13 @@ export default function BackupRestorePage() {
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-800">
               1
             </span>
-            On this device, export an <strong>encrypted</strong> backup using the form above.
+            Export an <strong>encrypted</strong> backup using the form above.
           </li>
           <li className="flex gap-2">
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-800">
               2
             </span>
-            Transfer the file using a method you trust — USB cable, your own cloud drive, email to
+            Transfer the file using a method you trust â€” USB cable, your own cloud drive, email to
             yourself, or a direct file transfer. The file is encrypted, so it stays unreadable even if
             the transfer route is not private.
           </li>
@@ -532,8 +532,8 @@ export default function BackupRestorePage() {
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-800">
               3
             </span>
-            On the second device, install the app, then open this page and import the file. Enter the
-            backup password to decrypt it.
+            On another device, configure the same private GitHub repository and import the file.
+            Enter the backup password to decrypt it.
           </li>
         </ol>
 
@@ -544,10 +544,11 @@ export default function BackupRestorePage() {
           </p>
           <p className="mt-1">
             There is no recovery code and no backdoor. If the backup password is lost, the encrypted
-            backup cannot be restored — on any device.
+            backup cannot be restored â€” on any device.
           </p>
         </div>
       </section>
     </>
   )
 }
+

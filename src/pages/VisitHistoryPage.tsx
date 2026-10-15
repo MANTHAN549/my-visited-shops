@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
   ArrowDownUp,
@@ -176,7 +176,7 @@ export default function VisitHistoryPage() {
     <>
       <PageHeader
         title="Shop Messages / Visit History"
-        description={`${pluralize(visits.length, 'visit record')} saved on this device. Each visit keeps its own dated note.`}
+        description={`${pluralize(visits.length, 'visit record')} saved in the shared GitHub data file. Each visit keeps its own dated note.`}
         icon={<MessageSquareText className="h-5 w-5 text-brand-700" />}
         actions={
           <>
@@ -222,7 +222,7 @@ export default function VisitHistoryPage() {
               className="input pl-9"
               value={filters.query}
               onChange={(event) => patch({ query: event.target.value })}
-              placeholder="Search shop name or words in your visit notes…"
+              placeholder="Search shop name or words in your visit notesâ€¦"
               aria-label="Search visit records"
             />
             {filters.query && (
@@ -351,7 +351,7 @@ export default function VisitHistoryPage() {
               <EmptyState
                 icon={<Clock className="h-6 w-6" />}
                 title="No visits recorded yet"
-                description="Open a shop and tap “Mark Visit as Done” to save a dated note of what happened. Every visit is kept as a separate record."
+                description="Open a shop and tap â€œMark Visit as Doneâ€ to save a dated note of what happened. Every visit is kept as a separate record."
                 action={
                   <Link to="/shops" className="btn-primary btn-sm">
                     <Store className="h-3.5 w-3.5" />
@@ -465,3 +465,4 @@ export default function VisitHistoryPage() {
     </>
   )
 }
+

@@ -57,6 +57,7 @@ export const META_KEYS = {
   install: 'install',
   schemaInfo: 'schemaInfo',
   cloudEncryption: 'cloudEncryption',
+  cloudAccount: 'cloudAccount',
 } as const
 
 /**

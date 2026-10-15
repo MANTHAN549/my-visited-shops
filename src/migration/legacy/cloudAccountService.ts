@@ -1,4 +1,4 @@
-import type { User } from '@supabase/supabase-js'
+import type { AuthChangeEvent, User } from '@supabase/supabase-js'
 import type { CloudKeyring } from './cloudEncryptionService'
 import { supabase } from './supabaseClient'
 
@@ -55,12 +55,21 @@ export async function getCloudKeyring(userId: string): Promise<CloudKeyring | nu
   return (data?.keyring as CloudKeyring | undefined) ?? null
 }
 
-export async function saveCloudKeyring(userId: string, keyring: CloudKeyring): Promise<void> {
-  const { error } = await client().from('user_keyrings').upsert({ user_id: userId, keyring, updated_at: new Date().toISOString() }, { onConflict: 'user_id' })
-  if (error) throw new Error(`Could not save encryption setup: ${error.message}`)
+export async function insertCloudKeyring(userId: string, keyring: CloudKeyring): Promise<void> {
+  const { error } = await client().from('user_keyrings')
+    .insert({ user_id: userId, keyring, updated_at: new Date().toISOString() })
+  if (error) throw new Error(`Could not create encryption setup: ${error.message}`)
 }
 
-export function listenForAuth(callback: (user: User | null) => void): () => void {
-  const { data } = client().auth.onAuthStateChange((_event, session) => callback(session?.user ?? null))
+export async function saveCloudKeyring(userId: string, keyring: CloudKeyring): Promise<void> {
+  const { data, error } = await client().from('user_keyrings')
+    .update({ keyring, updated_at: new Date().toISOString() })
+    .eq('user_id', userId).select('user_id').maybeSingle()
+  if (error) throw new Error(`Could not save encryption setup: ${error.message}`)
+  if (!data) throw new Error('The account encryption setup no longer exists. Reload it before changing the passphrase.')
+}
+
+export function listenForAuth(callback: (user: User | null, event: AuthChangeEvent) => void): () => void {
+  const { data } = client().auth.onAuthStateChange((event, session) => callback(session?.user ?? null, event))
   return () => data.subscription.unsubscribe()
 }

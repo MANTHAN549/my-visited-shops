@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react'
-import { AppProviders, useSession } from '@/app/providers'
+import { AppProviders } from '@/app/providers'
 import { AppRoutes } from '@/app/router'
 import { UnlockScreen } from '@/components/layout/UnlockScreen'
 import { Spinner } from '@/components/common'
-import { assertSchemaCompatible } from '@/database/migrations'
-import { db } from '@/database/db'
-import { getEncryptionMeta } from '@/services/settingsService'
-import { requestPersistentStorage } from '@/database/db'
-import { setSessionKey } from '@/services/encryptionService'
 import { GithubDataProvider } from '@/services/githubDataContext'
+import { useGithubData } from '@/services/githubDataContext'
+import { getGithubConfig } from '@/services/githubStore'
 
 /**
  * Startup gate.
@@ -19,34 +16,21 @@ import { GithubDataProvider } from '@/services/githubDataContext'
  * message instead of a blank page.
  */
 function AppShell() {
-  const { ready, locked } = useSession()
+  const { unlocked } = useGithubData()
   const [bootError, setBootError] = useState<string | null>(null)
-  const [booted, setBooted] = useState(false)
+  const [booted, setBooted] = useState(true)
 
   useEffect(() => {
     let cancelled = false
 
     async function boot() {
       try {
-        await assertSchemaCompatible(db)
-
-        // Best-effort: ask the browser to keep our data. A refusal is not fatal.
-        void requestPersistentStorage()
-
-        const meta = await getEncryptionMeta()
-
-        // A brand new installation with encryption already configured (for
-        // example a restored database) must start locked.
-        if (meta.mode === 'encrypted') {
-          setSessionKey(null)
-        }
-
         if (!cancelled) setBooted(true)
       } catch (error) {
         if (!cancelled) {
           setBootError(
             (error as Error)?.message ??
-              'The local database could not be opened. Private browsing mode or a blocked storage setting can cause this.',
+            'Could not initialize GitHub storage.',
           )
         }
       }
@@ -77,7 +61,7 @@ function AppShell() {
     )
   }
 
-  if (!booted || !ready) {
+  if (!booted) {
     return (
       <div className="flex min-h-[100dvh] items-center justify-center gap-3 bg-ink-50 text-sm text-ink-500">
         <Spinner />
@@ -86,7 +70,8 @@ function AppShell() {
     )
   }
 
-  if (locked) return <UnlockScreen />
+  const config = getGithubConfig()
+  if (config.token && config.owner && config.repo && !unlocked) return <UnlockScreen />
 
   return <AppRoutes />
 }

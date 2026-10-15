@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+﻿import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   ArrowUpDown,
@@ -200,11 +200,11 @@ export default function AllShopsPage() {
 
     const answer = await confirm({
       title: `Delete ${shop.name}?`,
-      message: `This shop and its contacts will be removed from this device. It has ${shop.visitCount ?? 0} visit record(s).`,
+      message: `This shop and its contacts will be removed from the shared GitHub data file. It has ${shop.visitCount ?? 0} visit record(s).`,
       confirmLabel: 'Continue',
       tone: 'danger',
       checkbox: {
-        label: 'Also delete this shop’s visit history',
+        label: 'Also delete this shopâ€™s visit history',
         defaultChecked: true,
       },
     })
@@ -219,7 +219,7 @@ export default function AllShopsPage() {
     <>
       <PageHeader
         title="All Shops"
-        description={`${pluralize(shops.length, 'shop')} saved on this device.`}
+        description={`${pluralize(shops.length, 'shop')} saved in the shared GitHub data file.`}
         icon={<Store className="h-5 w-5 text-brand-700" />}
         actions={
           <>
@@ -254,7 +254,7 @@ export default function AllShopsPage() {
               className="input pl-9"
               value={filters.query}
               onChange={(event) => patch({ query: event.target.value })}
-              placeholder="Search name, owner, phone, address, category, notes…"
+              placeholder="Search name, owner, phone, address, category, notesâ€¦"
               aria-label="Search shops"
             />
             {filters.query && (
@@ -283,7 +283,7 @@ export default function AllShopsPage() {
               <option value="recent">Recently updated</option>
               <option value="added">Recently added</option>
               <option value="visited">Recently visited</option>
-              <option value="name">Name (A–Z)</option>
+              <option value="name">Name (Aâ€“Z)</option>
               <option value="nearest">Nearest to me</option>
             </select>
           </div>
@@ -514,3 +514,4 @@ export default function AllShopsPage() {
     </>
   )
 }
+

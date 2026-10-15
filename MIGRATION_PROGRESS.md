@@ -1,20 +1,43 @@
-# GitHub storage migration progress
+﻿# GitHub storage migration progress
+
+Branch: `github-storage`
 
 ## Phase 1: New storage layer
 
-- Status: committed as aa63c07.
-- Added strict version 2 persisted record/document schemas, encrypted GitHub Contents API read/write, retry queue, conflict re-fetch, tombstones, visit rollups, offline cache reads, image compression, size limit, React context hooks, and initial Settings controls.
-- The existing Dexie and Supabase application paths remain in place for migration.
-- Verification: typecheck passed; focused GitHub store tests passed (4 tests); targeted ESLint passed.
+- Status: committed as `aa63c07`.
+- Added strict v2 persisted schemas, encrypted GitHub Contents API reads and writes, serialized write queue, SHA conflict retry, tombstones, visit rollups, encrypted offline cache, image compression, and Settings controls.
+- Verification at the time: typecheck, focused store tests, and targeted ESLint passed.
 
 ## Phase 2: Migration tool
 
-- Status: implemented; targeted typecheck, tests and ESLint pass.
-- Added isolated migration readers for IndexedDB and optional Supabase. The page decrypts with existing local/cloud key flows, validates records, previews source/final counts, reports invalid rows and orphan visits, offers backups, merges by timestamps and tombstones, uploads, re-downloads, verifies IDs/counts, then enables explicit local IndexedDB clearing.
-- Old source data remains until the explicit post-verification clear action. Supabase records are never cleared.
-- Verification: typecheck passed; focused store/migration merge tests passed (6 tests); targeted ESLint passed.
-- Next: switch app reads/writes and settings to GitHub storage, isolate legacy readers/dependencies, and update backup/erase flows.
+- Status: committed as `410f8aa`.
+- Added IndexedDB and optional Supabase readers, validation and preview, source merge, backup download, verified upload, and explicit post-verification IndexedDB clearing.
+- Supabase records are never cleared. Orphan visits remain visible and preserved.
+- Verification at the time: typecheck, focused merge/store tests, and targeted ESLint passed.
 
-## Existing workspace changes
+## Phase 3: Switch the app and remove old storage
 
-The following files had edits before this task began and must be preserved: `README.md`, `src/components/layout/CloudSyncPanel.tsx`, `src/database/schema.ts`, `src/pages/BackupRestorePage.tsx`, `src/pages/SettingsPage.tsx`, `src/services/cloudAccountService.ts`, `src/services/cloudSyncService.ts`, `src/services/shopService.ts`, `src/services/visitService.ts`, `tests/database.test.ts`, and `vite.config.ts`. The untracked `.npm-cache/` directory is also pre-existing.
+- Status: implementation complete; commit pending.
+- Switched shop, visit, settings, backup, and restore access to GitHub storage and context hooks. The app asks for the GitHub data passphrase at startup when a repository is configured.
+- Replaced local encryption and cloud-account settings UI with GitHub settings; removed CloudSyncPanel, sync queue, local encryption, and the old app database services from the main source tree.
+- Moved the remaining Dexie/Supabase migration readers and decrypt/auth support into `src/migration/legacy/`. Kept `dexie` and `@supabase/supabase-js`; removed `dexie-react-hooks` and `fake-indexeddb` from the app dependencies/tests.
+- Reworked erase to tombstone and clear the shared GitHub records. Backups now read and restore the GitHub document.
+- Next: commit Phase 3, finish Phase 4 deployment/PWA config and Phase 5 docs/tests, then run the full verification suite.
+
+## Phase 4: PWA, build, deploy
+
+- Status: implementation in progress.
+- Added an explicit NetworkOnly service-worker rule for `api.github.com`, retained map tile caching and GitHub Pages base-path behavior, and updated the app/manifest descriptions and deployment workflow.
+- Next: verify generated output and commit Phase 4.
+
+## Phase 5: Docs and tests
+
+- Status: implementation in progress.
+- Rewrote the setup and project docs for a private GitHub data repository and per-device migration. Expanded mocked-fetch tests for encryption, conflict retries, large files, invalid documents, deletes, rollups, and orphan visits.
+- Verification so far: typecheck passes; 55 tests pass; production build succeeds. ESLint has 9 existing warnings in unrelated components and no errors.
+- Next: finish review, run all checks again, update this file, and commit Phase 5.
+
+## Workspace notes
+
+- The pre-existing `.npm-cache/` directory is retained and excluded from commits.
+- `npm uninstall dexie-react-hooks fake-indexeddb` completed successfully and refreshed `package-lock.json`.
