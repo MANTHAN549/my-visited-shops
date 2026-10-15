@@ -1,4 +1,4 @@
-import type { AppSettings, CloudRecord, Shop, Visit } from '@/types'
+import type { AppSettings, Shop, Visit } from '@/types'
 import { closeDatabase, db, openDatabase } from './legacy/database/db'
 import { META_KEYS } from './legacy/database/schema'
 import { decodeShop, decodeVisit } from './legacy/codec'
@@ -10,6 +10,7 @@ import { supabase } from './legacy/supabaseClient'
 import { persistedSettingsSchema, persistedShopSchema, persistedVisitSchema, tombstoneSchema, type Tombstone } from '@/services/persistedSchemas'
 
 export type InvalidLegacyRecord = { source: 'IndexedDB' | 'Supabase'; kind: string; id: string; raw: string; reason: string }
+type CloudRecord = { id: string; entity: 'shop' | 'visit'; ciphertext: string | null; iv: string | null; revision: number; updated_at: string; deleted_at: string | null }
 export type LegacyData = {
   shops: Shop[]
   visits: Visit[]

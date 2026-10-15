@@ -21,7 +21,7 @@
  * The `v` column is the envelope version, so a future release can change the
  * encryption format and migrate lazily on read.
  */
-import type { KeyValueRecord, ShopRecord, SyncQueueRecord, SyncStateRecord, VisitRecord } from '@/types'
+import type { KeyValueRecord, ShopRecord, SyncQueueRecord, SyncStateRecord, VisitRecord } from '../types'
 
 export const DB_NAME = 'my-visited-shops'
 

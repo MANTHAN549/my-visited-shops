@@ -1,7 +1,7 @@
 ﻿import { Lock, ShieldCheck } from 'lucide-react'
 import { useState } from 'react'
 import { useToast } from '@/app/providers'
-import { setGithubPassphrase, refreshGithubData } from '@/services/githubStore'
+import { initializeGithubStore } from '@/services/githubStore'
 import { useGithubData } from '@/services/githubDataContext'
 import { Spinner } from '@/components/common'
 
@@ -28,8 +28,7 @@ export function UnlockScreen() {
     setMessage(null)
 
     try {
-      setGithubPassphrase(password)
-      await refreshGithubData()
+      await initializeGithubStore(password)
       await refresh()
 
       setPassword('')
@@ -59,6 +58,7 @@ export function UnlockScreen() {
         </div>
 
         <form onSubmit={handleUnlock} className="card p-5">
+          <p className="mb-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-950">For a new data repository, set a passphrase with at least 12 characters. A forgotten passphrase cannot be recovered.</p>
           <label className="label" htmlFor="unlock-password">
             GitHub data passphrase
           </label>

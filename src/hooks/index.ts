@@ -34,7 +34,6 @@ export function useSettings() {
   const update = async (patch: Partial<AppSettings>) => { const next = await (await import('@/services/settingsService')).saveSettings(patch); setLoaded(next); await refresh() }
   return { settings: loaded, loading: false, error: null, reload: async () => { setLoaded(await getSettings()); await refresh() }, update }
 }
-export function useEncryptionMeta() { return { meta: null, loading: false, reload: async () => undefined } }
 export function useOnlineStatus() {
   const [online, setOnline] = useState(navigator.onLine)
   useEffect(() => { const on = () => setOnline(true); const off = () => setOnline(false); window.addEventListener('online', on); window.addEventListener('offline', off); return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off) } }, [])

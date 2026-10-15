@@ -2,7 +2,7 @@
  * Zod validation schemas.
  *
  * These are used by the Add/Edit shop form, the visit dialog and the backup
- * importer, so every path into IndexedDB is validated with the same rules.
+ * importer, so every path into persisted shop data is validated with the same rules.
  */
 import { z } from 'zod'
 

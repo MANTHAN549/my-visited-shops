@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Shop, Visit } from '@/types'
-import { refreshGithubData, type GithubPayload } from './githubStore'
+import { hasGithubPassphrase, refreshGithubData, type GithubPayload } from './githubStore'
 
 type GithubDataState = {
   shops: Shop[]
@@ -27,7 +27,7 @@ export function GithubDataProvider({ children }: { children: ReactNode }) {
   const [unlocked, setUnlocked] = useState(false)
   const refresh = useCallback(async () => {
     setLoading(true)
-    try { setPayload(await refreshGithubData()); setError(null); setUnlocked(true) }
+    try { setPayload(await refreshGithubData()); setError(null); setUnlocked(hasGithubPassphrase()) }
     catch (failure) { setError(failure instanceof Error ? failure.message : 'Could not load GitHub data.') }
     finally { setLoading(false) }
   }, [])

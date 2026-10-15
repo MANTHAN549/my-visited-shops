@@ -1,40 +1,26 @@
-# GitHub Pages setup
+﻿# GitHub Pages setup
 
-## Deployment configuration
+The Vite build supports the project subpath `/my-visited-shops/`, and HashRouter keeps client-side routes working on GitHub Pages. The deployment workflow builds and publishes the app without storage credentials. It must never receive a GitHub data token.
 
-The application uses Vite's configurable `base` and React Router's `HashRouter`, so it can run under the repository subpath without server-side route rewrites. The Actions workflow sets `VITE_BASE_PATH=/my-visited-shops/` for production builds; local development keeps the existing `/` default.
+## Create the private data repository and token
 
-`.github/workflows/deploy.yml` builds and deploys on pushes to `main` and supports manual runs with `workflow_dispatch`. It uses Node.js 22, `npm ci`, the existing `npm run build` command, and GitHub's Pages artifact/deployment actions. The PWA plugin derives asset, manifest, and service-worker paths from Vite's configured base.
+1. Create a **private** GitHub repository named `my-visited-shops-data` (or choose another private repository) and its default branch, usually `main`.
+2. In GitHub account settings, create a fine-grained personal access token. Restrict repository access to this data repository only and grant **Contents: Read and write**.
+3. In the deployed app's **Settings**, enter your GitHub username, repository, branch, and token, then save and test. The token is stored in that browser's local storage. Repeat on each device. Never commit or publish it.
+4. Set the same GitHub data passphrase on each device. It is used to encrypt `data.json` before upload and is held in memory only. A forgotten passphrase cannot be recovered.
 
-## One-time GitHub settings
+The app creates the encrypted `data.json` file on first use. GitHub Pages Actions variables and `.env` configuration are not used for storage credentials.
 
-1. In **Settings → Secrets and variables → Actions → Variables**, add:
-   - `VITE_SUPABASE_URL`: the existing Supabase project URL.
-   - `VITE_SUPABASE_PUBLISHABLE_KEY`: that project's publishable key (the older anon/public key is also a browser-safe key if that is what the project provides).
-2. These values are embedded in browser assets by Vite. The publishable key is public by design; never add a service-role key, secret API key, or database password here. Supabase RLS and authentication must protect data.
-3. In **Settings → Pages**, select **GitHub Actions** as the build and deployment source.
-4. In Supabase **Authentication → URL Configuration**, allow the production redirect URL `https://manthan549.github.io/my-visited-shops/` and local development URL `http://localhost:5173/`. The app's password reset flow returns to its settings route using the URL hash.
+## Deploy
 
-The `.env.local` file remains ignored by Git. `.env.example` contains placeholders only and needs no change for this deployment setup.
+In the application repository, open **Settings → Pages** and select **GitHub Actions** as the source. Push to `main` or run **Actions → Deploy to GitHub Pages → Run workflow**. The workflow sets `VITE_BASE_PATH=/my-visited-shops/` and builds with Node.js 22.
 
-## Run and verify deployment
+Published app: <https://manthan549.github.io/my-visited-shops/>
 
-Push a commit to `main`, or open **Actions → Deploy to GitHub Pages → Run workflow** and select `main`. Check both the build and deploy jobs in the Actions run. The published site should be available at:
+## Migrate old records
 
-<https://manthan549.github.io/my-visited-shops/>
+Open the deployed app on every device that contains old data. Configure GitHub settings and unlock the data file, then go to `#/migrate` (also linked as **Move old data** in Settings). Preview IndexedDB and optional Supabase records, download the offered backup, upload, and wait for verification. Only then may you clear old IndexedDB on that device. Keep `src/migration/` until all devices are migrated and verified. Then delete `src/migration/`, its route, and the Settings link, and run `npm uninstall dexie @supabase/supabase-js`.
 
-After deployment, verify the site loads, open a route through the app's navigation, and refresh. Hash-based routes should continue to load on GitHub Pages. Install the PWA and check offline behavior separately on a supported secure browser context.
+## Privacy and caching
 
-If the site returns 404, confirm Pages uses **GitHub Actions**, the workflow ran from `main`, the repository is named `my-visited-shops`, and the Vite build used `/my-visited-shops/`. If cloud sync reports that it is not configured, check the two repository Actions variables and rerun the workflow so the values are included in the build.
-
-## Configuration inspected
-
-- `vite.config.ts` already reads `VITE_BASE_PATH`, retains the existing Vite/PWA plugins, and scopes the service worker and navigation fallback to the configured base.
-- `src/main.tsx` and `src/app/router.tsx` use `HashRouter`, avoiding Pages rewrite requirements.
-- `src/services/supabaseClient.ts` reads `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`; no service-role credential is needed in the browser.
-- `.gitignore` excludes `.env.local`, local environment files, build output, and personal backup files.
-- No deployment workflow existed at the time of setup.
-
-## Manual and unverified items
-
-The workflow has not been run against GitHub from this workspace. A repository maintainer must add the Actions variables, select GitHub Actions as the Pages source, configure the Supabase redirect allowlist, and push the workflow to `main` or start it manually. The expected URL and permissions can only be verified after that run completes.
+The GitHub token is never embedded in the build or workflow. The service worker uses a `NetworkOnly` rule for `api.github.com`; only static app resources and map tiles are cached. The encrypted file lives in your private data repository. Keep an independent backup and passphrase copy.

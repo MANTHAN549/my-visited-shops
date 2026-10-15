@@ -7,7 +7,8 @@
  */
 import { openDatabase, db } from './database/db'
 import { META_KEYS } from './database/schema'
-import type { AppSettings, EncryptionMeta } from '@/types'
+import type { AppSettings } from '@/types'
+import type { EncryptionMeta } from './types'
 import { DEFAULT_SETTINGS } from '@/types'
 import { makeMetaRecord } from './codec'
 

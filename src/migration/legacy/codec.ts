@@ -6,14 +6,9 @@
  * when it is in "plain local storage" mode (`enc: 0`) the payload is stored as
  * JSON so the app still works for users who decline encryption.
  */
-import type {
-  KeyValueRecord,
-  Shop,
-  ShopRecord,
-  Visit,
-  VisitRecord,
-} from '@/types'
-import { ENCRYPTION_ENVELOPE_VERSION } from '@/types'
+import type { Shop, Visit } from '@/types'
+import type { KeyValueRecord, ShopRecord, VisitRecord } from './types'
+import { ENCRYPTION_ENVELOPE_VERSION } from './types'
 import { decryptJson, encryptJson } from './encryptionService'
 
 export interface CodecContext {

@@ -13,8 +13,8 @@
  *    of an unlocked session and is dropped on lock. JavaScript cannot guarantee
  *    memory erasure, so this is best-effort only - stated honestly in the UI.
  */
-import type { EncryptionMeta } from '@/types'
-import { ENCRYPTION_ENVELOPE_VERSION } from '@/types'
+import type { EncryptionMeta } from './types'
+import { ENCRYPTION_ENVELOPE_VERSION } from './types'
 
 /** Minimum work factor. The Settings UI cannot go below this. */
 export const PBKDF2_MIN_ITERATIONS = 600_000

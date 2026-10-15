@@ -15,6 +15,7 @@ let passphrase: string | null = null
 let writes: Promise<unknown> = Promise.resolve()
 
 export function setGithubPassphrase(value: string | null): void { passphrase = value }
+export function hasGithubPassphrase(): boolean { return passphrase !== null }
 export function getGithubConfig(): GithubConfig {
   return {
     token: localStorage.getItem('gh_token') ?? '',
@@ -143,7 +144,7 @@ async function fetchFresh(): Promise<{ payload: GithubPayload; sha: string | nul
       method: 'GET', cache: 'no-store',
       headers: { Authorization: `Bearer ${config.token}`, Accept: 'application/vnd.github+json' },
     })
-    if (!repoCheck.ok) throw apiError(404, rateLimitSignal(repoCheck))
+    if (!repoCheck.ok) throw apiError(repoCheck.status, rateLimitSignal(repoCheck))
     localStorage.setItem(CACHE_KEY, JSON.stringify({ version: 2, payload: emptyPayload() }))
     return { payload: emptyPayload(), sha: null, salt: bytesToBase64(randomBytes(16)) }
   }
@@ -177,6 +178,7 @@ export async function refreshGithubData(): Promise<GithubPayload> {
           const cachedDocument = githubDocumentSchema.safeParse(parsed.wire)
           if (cachedDocument.success) return await decryptWire(cachedDocument.data as WireDocument)
         }
+        if (parsed && typeof parsed === 'object' && 'payload' in parsed) localStorage.removeItem(CACHE_KEY)
       }
     }
     throw error
@@ -200,7 +202,7 @@ export async function replaceGithubPayload(incoming: GithubPayload): Promise<Git
 }
 export async function testGithubConnection(): Promise<number> {
   const fresh = await fetchFresh()
-  return new Blob([JSON.stringify(fresh.payload)]).size
+  return new Blob([JSON.stringify(await encryptPayload(fresh.payload, fresh.salt))]).size
 }
 export async function initializeGithubStore(secret: string): Promise<void> {
   if (secret.length < 12) throw new Error('Use a GitHub data passphrase with at least 12 characters.')
@@ -284,12 +286,13 @@ export function saveGithubSettings(settings: AppSettings): Promise<AppSettings> 
   return enqueue(async () => { await updateFile((data) => ({ ...data, settings: validated })); return validated })
 }
 export function clearGithubCache(): void { localStorage.removeItem(CACHE_KEY) }
-export function eraseGithubData(): Promise<void> {
-  return enqueue(async () => { await updateFile((data) => ({ ...emptyPayload(), deleted: [
+export async function eraseGithubData(): Promise<void> {
+  await enqueue(async () => { await updateFile((data) => ({ ...emptyPayload(), deleted: [
     ...data.deleted,
     ...data.shops.map((shop) => tombstoneSchema.parse({ id: shop.id, type: 'shop', deletedAt: new Date().toISOString() })),
     ...data.visits.map((visit) => tombstoneSchema.parse({ id: visit.id, type: 'visit', deletedAt: new Date().toISOString() })),
   ] })) })
+  clearGithubCache()
 }
 
 function emptyPayloadWithRecords(shops: Shop[], visits: Visit[], settings: AppSettings, deleted: Tombstone[]): GithubPayload {

@@ -7,7 +7,7 @@
 import Dexie from 'dexie'
 import type { Table } from 'dexie'
 import { DB_NAME } from './schema'
-import type { KeyValueRecord, ShopRecord, SyncQueueRecord, SyncStateRecord, VisitRecord } from '@/types'
+import type { KeyValueRecord, ShopRecord, SyncQueueRecord, SyncStateRecord, VisitRecord } from '../types'
 import { registerMigrations } from './migrations'
 
 export class AppDatabase extends Dexie {
